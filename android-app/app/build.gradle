@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.tartheeb.app"
-        minSdk 22
+        minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -16,9 +16,6 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-        }
-        debug {
             minifyEnabled false
         }
     }
@@ -31,5 +28,4 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.webkit:webkit:1.10.0'
 }

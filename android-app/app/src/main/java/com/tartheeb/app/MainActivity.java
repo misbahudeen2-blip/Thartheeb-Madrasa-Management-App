@@ -32,14 +32,12 @@ public class MainActivity extends Activity {
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        // Create the server connection screen
         connectLayout = new LinearLayout(this);
         connectLayout.setOrientation(LinearLayout.VERTICAL);
         connectLayout.setGravity(Gravity.CENTER);
         connectLayout.setBackgroundColor(Color.parseColor("#0f172a"));
         connectLayout.setPadding(80, 80, 80, 80);
 
-        // App Title
         TextView title = new TextView(this);
         title.setText("Tartheeb");
         title.setTextColor(Color.WHITE);
@@ -50,7 +48,6 @@ public class MainActivity extends Activity {
         titleParams.bottomMargin = 20;
         connectLayout.addView(title, titleParams);
 
-        // Subtitle
         TextView subtitle = new TextView(this);
         subtitle.setText("Smart Madrasa Management");
         subtitle.setTextColor(Color.parseColor("#94a3b8"));
@@ -61,7 +58,6 @@ public class MainActivity extends Activity {
         subParams.bottomMargin = 60;
         connectLayout.addView(subtitle, subParams);
 
-        // Label
         TextView label = new TextView(this);
         label.setText("Enter Server IP Address:");
         label.setTextColor(Color.parseColor("#cbd5e1"));
@@ -71,7 +67,6 @@ public class MainActivity extends Activity {
         labelParams.bottomMargin = 16;
         connectLayout.addView(label, labelParams);
 
-        // IP Input Field
         ipInput = new EditText(this);
         ipInput.setHint("e.g. 192.168.1.8:8081");
         ipInput.setText("192.168.1.8:8081");
@@ -85,7 +80,6 @@ public class MainActivity extends Activity {
         inputParams.bottomMargin = 40;
         connectLayout.addView(ipInput, inputParams);
 
-        // Connect Button
         Button connectBtn = new Button(this);
         connectBtn.setText("CONNECT");
         connectBtn.setTextColor(Color.WHITE);
@@ -117,11 +111,9 @@ public class MainActivity extends Activity {
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
         webView.loadUrl(url);
-
         setContentView(webView);
     }
 
