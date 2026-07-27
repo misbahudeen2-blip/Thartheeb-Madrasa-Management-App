@@ -48,39 +48,65 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Dependencies
+      - name: Accept Android SDK Licenses & Setup SDK
         run: |
-          npm install
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          sudo apt-get update
+          sudo apt-get install -y android-sdk
+          export ANDROID_HOME=$HOME/android-sdk
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
+          unzip -q /tmp/cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools
+          mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
-      - name: Initialize & Sync Capacitor Android
+      - name: Install Project Dependencies
+        run: npm install
+
+      - name: Install Capacitor 5
+        run: npm install @capacitor/core@5 @capacitor/cli@5 @capacitor/android@5
+
+      - name: Create Capacitor Config
         run: |
-          mkdir -p public
-          npx cap add android || true
-          npx cap sync android
+          cat > capacitor.config.json << 'EOF'
+          {
+            "appId": "com.tartheeb.app",
+            "appName": "Tartheeb Madrasa",
+            "webDir": "public"
+          }
+          EOF
 
-      - name: Enforce Android 14 Target SDK 34 in variables.gradle
+      - name: Add Android Platform
+        run: npx cap add android
+
+      - name: Sync Android Platform
+        run: npx cap sync android
+
+      - name: Update variables.gradle for SDK 34
         run: |
-          if [ -f android/variables.gradle ]; then
-            cat << 'EOF' > android/variables.gradle
-ext {
-    minSdkVersion = 22
-    compileSdkVersion = 34
-    targetSdkVersion = 34
-    androidxActivityVersion = '1.8.0'
-    androidxAppCompatVersion = '1.6.1'
-    androidxCoordinatorLayoutVersion = '1.2.0'
-    androidxCoreVersion = '1.12.0'
-    androidxFragmentVersion = '1.6.2'
-}
-EOF
-          fi
+          cat > android/variables.gradle << 'EOF'
+          ext {
+              minSdkVersion = 22
+              compileSdkVersion = 34
+              targetSdkVersion = 34
+              androidxActivityVersion = '1.8.0'
+              androidxAppCompatVersion = '1.6.1'
+              androidxCoordinatorLayoutVersion = '1.2.0'
+              androidxCoreVersion = '1.12.0'
+              androidxFragmentVersion = '1.6.2'
+              androidxWebkitVersion = '1.10.0'
+          }
+          EOF
 
-      - name: Build Debug APK with Gradle
+      - name: Build Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
