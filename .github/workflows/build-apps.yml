@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Build Standalone Windows EXE
-        run: npx pkg . -t node18-win-x64 --output Tartheeb-App.exe
+        run: npx pkg server.js -t node18-win-x64 --output Tartheeb-App.exe
 
       - name: Upload Windows EXE Artifact
         uses: actions/upload-artifact@v4
@@ -42,26 +42,30 @@ jobs:
         with:
           node-version: 18
 
-      - name: Setup Java JDK
-        uses: actions/setup-java@v3
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Install Capacitor Android
+      - name: Install Dependencies
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap add android
+          npm install
+          npm install @capacitor/core@5 @capacitor/cli@5 @capacitor/android@5
+
+      - name: Add & Build Capacitor Android
+        run: |
+          npx cap add android || true
           npx cap sync android
 
-      - name: Build APK via Gradle
+      - name: Build APK with Gradle
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
