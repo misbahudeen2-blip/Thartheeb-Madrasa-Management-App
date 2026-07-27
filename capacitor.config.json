@@ -1,0 +1,6 @@
+{
+  "appId": "com.tartheeb.app",
+  "appName": "Tartheeb Madrasa",
+  "webDir": "public",
+  "bundledWebRuntime": false
+}
