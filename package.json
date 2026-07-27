@@ -3,9 +3,16 @@
   "version": "1.0.0",
   "description": "Real-time HTTP push data capture server for eSSL/ZKTeco biometric devices",
   "main": "server.js",
+  "bin": "server.js",
   "scripts": {
     "start": "node server.js",
-    "init-db": "node init-db.js"
+    "init-db": "node init-db.js",
+    "build:exe": "pkg . -t node18-win-x64 --output Tartheeb-App.exe"
+  },
+  "pkg": {
+    "assets": [
+      "public/**/*"
+    ]
   },
   "dependencies": {
     "cors": "^2.8.5",
