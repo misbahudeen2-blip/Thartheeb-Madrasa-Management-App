@@ -1,0 +1,9 @@
+{
+  "smtp": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "user": "thartheebofficial@gmail.com",
+    "pass": "mjqd nyum wmsq wvhm",
+    "from": "thartheebofficial@gmail.com"
+  }
+}

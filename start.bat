@@ -1,0 +1,9 @@
+@echo off
+title Tartheeb Madrasa Management App Server
+echo ==========================================================
+echo    Starting Tartheeb Madrasa Attendance Server...
+echo    Connecting to SQLite Database...
+echo    Listening on Port 8081...
+echo ==========================================================
+node server.js
+pause
