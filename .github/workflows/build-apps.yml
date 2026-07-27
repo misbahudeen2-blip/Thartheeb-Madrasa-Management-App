@@ -48,27 +48,35 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Dependencies & Capacitor 6
+      - name: Install Dependencies
         run: |
           npm install
-          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+          npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Add & Update Capacitor Android for Target SDK 34 (Android 14)
+      - name: Initialize & Sync Capacitor Android
         run: |
+          mkdir -p public
           npx cap add android || true
           npx cap sync android
 
-      - name: Update Target & Compile SDK to 34 in Gradle
+      - name: Enforce Android 14 Target SDK 34 in variables.gradle
         run: |
-          if [ -f android/app/build.gradle ]; then
-            sed -i 's/targetSdkVersion .*/targetSdkVersion 34/g' android/app/build.gradle
-            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' android/app/build.gradle
+          if [ -f android/variables.gradle ]; then
+            cat << 'EOF' > android/variables.gradle
+ext {
+    minSdkVersion = 22
+    compileSdkVersion = 34
+    targetSdkVersion = 34
+    androidxActivityVersion = '1.8.0'
+    androidxAppCompatVersion = '1.6.1'
+    androidxCoordinatorLayoutVersion = '1.2.0'
+    androidxCoreVersion = '1.12.0'
+    androidxFragmentVersion = '1.6.2'
+}
+EOF
           fi
 
-      - name: Build APK with Gradle
+      - name: Build Debug APK with Gradle
         run: |
           cd android
           chmod +x gradlew
