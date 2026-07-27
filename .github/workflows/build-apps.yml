@@ -40,7 +40,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Setup Java JDK 17
         uses: actions/setup-java@v4
@@ -51,15 +51,22 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Capacitor 6
         run: |
           npm install
-          npm install @capacitor/core@5 @capacitor/cli@5 @capacitor/android@5
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
 
-      - name: Add & Build Capacitor Android
+      - name: Add & Update Capacitor Android for Target SDK 34 (Android 14)
         run: |
           npx cap add android || true
           npx cap sync android
+
+      - name: Update Target & Compile SDK to 34 in Gradle
+        run: |
+          if [ -f android/app/build.gradle ]; then
+            sed -i 's/targetSdkVersion .*/targetSdkVersion 34/g' android/app/build.gradle
+            sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' android/app/build.gradle
+          fi
 
       - name: Build APK with Gradle
         run: |
