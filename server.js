@@ -2247,7 +2247,7 @@ app.delete('/api/teachers/assignments/:user_id', async (req, res) => {
  */
 app.post('/api/students', async (req, res) => {
   const {
-    user_id, name, card_number, batch_id, role,
+    old_user_id, user_id, name, card_number, batch_id, role,
     admission_date, roll_number, gender, dob, caste,
     father, mother, primary_number, secondary_number, aadhar_number,
     school_name, monthly_fee, password, address, photo, age,
@@ -2259,6 +2259,19 @@ app.post('/api/students', async (req, res) => {
   }
 
   try {
+    const cleanUserId = String(user_id).trim();
+    if (old_user_id && String(old_user_id).trim() !== cleanUserId) {
+      const cleanOld = String(old_user_id).trim();
+      // Safely migrate all historical attendance and related logs to new user_id
+      await db.run('UPDATE daily_attendance SET user_id = ? WHERE user_id = ?', [cleanUserId, cleanOld]);
+      try { await db.run('UPDATE parent_checks SET user_id = ? WHERE user_id = ?', [cleanUserId, cleanOld]); } catch(e){}
+      try { await db.run('UPDATE habit_logs SET user_id = ? WHERE user_id = ?', [cleanUserId, cleanOld]); } catch(e){}
+      try { await db.run('UPDATE fee_records SET user_id = ? WHERE user_id = ?', [cleanUserId, cleanOld]); } catch(e){}
+      try { await db.run('UPDATE fingerprints SET user_id = ? WHERE user_id = ?', [cleanUserId, cleanOld]); } catch(e){}
+      try { await db.run('UPDATE student_additional_fees SET user_id = ? WHERE user_id = ?', [cleanUserId, cleanOld]); } catch(e){}
+      await db.run('DELETE FROM students WHERE user_id = ?', [cleanOld]);
+    }
+
     const activeBatchId = batch_id ? batch_id.trim() : 'UNORGANIZED';
     const matchedBatch = await db.get('SELECT batch_id FROM batches WHERE batch_id = ? OR batch_name = ?', [activeBatchId, activeBatchId]);
     const finalBatch = matchedBatch ? matchedBatch.batch_id : 'UNORGANIZED';
