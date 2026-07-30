@@ -2369,7 +2369,33 @@
 
           <!-- Attendance Records table -->
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile Cards View -->
+            <div class="block sm:hidden divide-y divide-slate-100">
+              <template x-for="att in getTenantAttendanceLog()" :key="att.id">
+                <div class="p-4 space-y-2 hover:bg-slate-50 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-800 text-sm" x-text="att.studentName"></span>
+                    <span :class="att.status === 'Present' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-100 text-rose-700 border-rose-200'" class="px-2.5 py-0.5 rounded text-xs font-bold border">
+                      <span x-text="att.status === 'Present' ? t('present') : t('absent')"></span>
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs text-slate-500">
+                    <div>
+                      <span class="text-slate-400">Card:</span>
+                      <span class="font-bold text-slate-700" x-text="att.cardId"></span>
+                    </div>
+                    <div class="space-x-1">
+                      <span x-text="att.date"></span>
+                      <span class="text-slate-400" x-text="att.time"></span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <div x-show="getTenantAttendanceLog().length === 0" class="p-8 text-center text-slate-400 italic text-sm" x-text="t('noAttendanceRecords')"></div>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden sm:block overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
@@ -3390,43 +3416,73 @@
           <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Assigned Fees List</h4>
           
           <div class="border border-slate-100 rounded-2xl overflow-hidden bg-white">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase">
-                  <th class="p-3">Fee Details</th>
-                  <th class="p-3 text-right">Amount</th>
-                  <th class="p-3 text-center">Status</th>
-                  <th class="p-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 text-slate-700">
-                <template x-for="fee in additionalFeesList" :key="fee.id">
-                  <tr class="hover:bg-slate-50/50">
-                    <td class="p-3">
-                      <div class="font-bold text-slate-800" x-text="fee.purpose"></div>
+            <!-- Mobile Cards View -->
+            <div class="block sm:hidden divide-y divide-slate-100">
+              <template x-for="fee in additionalFeesList" :key="fee.id">
+                <div class="p-3 space-y-2">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="font-bold text-slate-800 text-xs" x-text="fee.purpose"></div>
                       <div class="text-[10px] text-slate-400 font-semibold" x-text="fee.fee_type"></div>
-                    </td>
-                    <td class="p-3 text-right font-bold text-slate-800" x-text="'₹' + fee.amount"></td>
-                    <td class="p-3 text-center">
-                      <button @click="toggleAdditionalFeeStatus(fee)" :class="fee.status === 'PAID' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-100'" class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition shadow-sm">
-                        <i :class="fee.status === 'PAID' ? 'fa-solid fa-circle-check' : 'fa-solid fa-clock'" class="mr-0.5"></i>
-                        <span x-text="fee.status === 'PAID' ? (lang === 'ml' ? 'വാങ്ങി' : 'Paid') : (lang === 'ml' ? 'Pending' : 'Pending')"></span>
-                      </button>
-                    </td>
-                    <td class="p-3 text-center">
-                      <button @click="deleteAdditionalFee(fee.id)" class="text-rose-600 hover:text-rose-700 p-1 hover:bg-rose-50 rounded transition">
-                        <i class="fa-solid fa-trash-can text-sm"></i>
-                      </button>
-                    </td>
+                    </div>
+                    <div class="font-bold text-slate-800 text-xs" x-text="'₹' + fee.amount"></div>
+                  </div>
+                  <div class="flex items-center justify-between pt-1">
+                    <button @click="toggleAdditionalFeeStatus(fee)" :class="fee.status === 'PAID' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-100'" class="px-2.5 py-1 rounded-full text-[10px] font-bold border transition shadow-xs">
+                      <i :class="fee.status === 'PAID' ? 'fa-solid fa-circle-check' : 'fa-solid fa-clock'" class="mr-1"></i>
+                      <span x-text="fee.status === 'PAID' ? (lang === 'ml' ? 'വാങ്ങി' : 'Paid') : (lang === 'ml' ? 'Pending' : 'Pending')"></span>
+                    </button>
+                    <button @click="deleteAdditionalFee(fee.id)" class="text-rose-600 hover:text-rose-700 p-1.5 hover:bg-rose-50 rounded-lg transition">
+                      <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+              </template>
+              <template x-if="additionalFeesList.length === 0">
+                <div class="p-6 text-center text-slate-400 italic text-xs">No custom/additional fees assigned to this student.</div>
+              </template>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden sm:block overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase">
+                    <th class="p-3">Fee Details</th>
+                    <th class="p-3 text-right">Amount</th>
+                    <th class="p-3 text-center">Status</th>
+                    <th class="p-3 text-center">Action</th>
                   </tr>
-                </template>
-                <template x-if="additionalFeesList.length === 0">
-                  <tr>
-                    <td colspan="4" class="p-6 text-center text-slate-400 italic">No custom/additional fees assigned to this student.</td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                  <template x-for="fee in additionalFeesList" :key="fee.id">
+                    <tr class="hover:bg-slate-50/50">
+                      <td class="p-3">
+                        <div class="font-bold text-slate-800" x-text="fee.purpose"></div>
+                        <div class="text-[10px] text-slate-400 font-semibold" x-text="fee.fee_type"></div>
+                      </td>
+                      <td class="p-3 text-right font-bold text-slate-800" x-text="'₹' + fee.amount"></td>
+                      <td class="p-3 text-center">
+                        <button @click="toggleAdditionalFeeStatus(fee)" :class="fee.status === 'PAID' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-100'" class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition shadow-sm">
+                          <i :class="fee.status === 'PAID' ? 'fa-solid fa-circle-check' : 'fa-solid fa-clock'" class="mr-0.5"></i>
+                          <span x-text="fee.status === 'PAID' ? (lang === 'ml' ? 'വാങ്ങി' : 'Paid') : (lang === 'ml' ? 'Pending' : 'Pending')"></span>
+                        </button>
+                      </td>
+                      <td class="p-3 text-center">
+                        <button @click="deleteAdditionalFee(fee.id)" class="text-rose-600 hover:text-rose-700 p-1 hover:bg-rose-50 rounded transition">
+                          <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </template>
+                  <template x-if="additionalFeesList.length === 0">
+                    <tr>
+                      <td colspan="4" class="p-6 text-center text-slate-400 italic">No custom/additional fees assigned to this student.</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -3932,45 +3988,78 @@
       </div>
 
       <div class="p-6 overflow-y-auto flex-grow space-y-4">
-        <div class="overflow-x-auto border border-slate-100 rounded-xl">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <th class="p-3">Adm No</th>
-                <th class="p-3">Roll No</th>
-                <th class="p-3" x-text="t('studentName')"></th>
-                <th class="p-3 text-center" x-text="lang === 'ml' ? 'റിപ്പോർട്ട്' : 'Report'"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
-              <template x-for="std in (selectedBatchForStudents ? getTenantStudents().filter(s => s.batchId === selectedBatchForStudents.id) : [])" :key="std.id">
-                <tr class="hover:bg-slate-50 transition">
-                  <td class="p-3 font-sans font-semibold text-xs font-bold text-slate-500" x-text="std.admissionNumber || '-'"></td>
-                  <td class="p-3 font-sans font-semibold text-xs font-bold text-slate-800" x-text="std.rollNumber || '-'"></td>
-                  <td class="p-3 flex items-center space-x-3">
-                    <div class="h-8 w-8 rounded-full bg-emerald-50 text-emerald-800 font-bold flex items-center justify-center uppercase overflow-hidden border border-emerald-100 flex-shrink-0">
-                      <template x-if="std.photo">
-                        <img :src="std.photo" class="h-full w-full object-cover" />
-                      </template>
-                      <template x-if="!std.photo">
-                        <span x-text="std.name.charAt(0)"></span>
-                      </template>
+        <div class="border border-slate-100 rounded-xl overflow-hidden bg-white">
+          <!-- Mobile Cards View -->
+          <div class="block sm:hidden divide-y divide-slate-100">
+            <template x-for="std in (selectedBatchForStudents ? getTenantStudents().filter(s => s.batchId === selectedBatchForStudents.id) : [])" :key="std.id">
+              <div class="p-3.5 flex items-center justify-between space-x-3">
+                <div class="flex items-center space-x-3 min-w-0">
+                  <div class="h-9 w-9 rounded-full bg-emerald-50 text-emerald-800 font-bold flex items-center justify-center uppercase overflow-hidden border border-emerald-100 flex-shrink-0">
+                    <template x-if="std.photo">
+                      <img :src="std.photo" class="h-full w-full object-cover" />
+                    </template>
+                    <template x-if="!std.photo">
+                      <span x-text="std.name.charAt(0)"></span>
+                    </template>
+                  </div>
+                  <div class="truncate">
+                    <div class="font-bold text-slate-800 text-sm truncate" x-text="std.name"></div>
+                    <div class="text-[11px] text-slate-400 font-semibold space-x-2">
+                      <span>Adm: <strong class="text-slate-600" x-text="std.admissionNumber || '-'"></strong></span>
+                      <span>Roll: <strong class="text-slate-600" x-text="std.rollNumber || '-'"></strong></span>
                     </div>
-                    <span class="font-semibold text-slate-800" x-text="std.name"></span>
-                  </td>
-                  <td class="p-3 text-center">
-                    <button @click="printStudentReportCard(std)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1 mx-auto transition shadow-xs">
-                      <i class="fa-solid fa-file-invoice text-[10px]"></i>
-                      <span x-text="lang === 'ml' ? 'റിപ്പോർട്ട്' : 'Report'"></span>
-                    </button>
-                  </td>
+                  </div>
+                </div>
+                <button @click="printStudentReportCard(std)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1 flex-shrink-0 transition shadow-xs">
+                  <i class="fa-solid fa-file-invoice text-[10px]"></i>
+                  <span x-text="lang === 'ml' ? 'റിപ്പോർട്ട്' : 'Report'"></span>
+                </button>
+              </div>
+            </template>
+            <div x-show="selectedBatchForStudents && getTenantStudents().filter(s => s.batchId === selectedBatchForStudents.id).length === 0" class="p-8 text-center text-slate-400 italic text-xs" x-text="t('noStudentsFound')"></div>
+          </div>
+
+          <!-- Desktop Table View -->
+          <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                  <th class="p-3">Adm No</th>
+                  <th class="p-3">Roll No</th>
+                  <th class="p-3" x-text="t('studentName')"></th>
+                  <th class="p-3 text-center" x-text="lang === 'ml' ? 'റിപ്പോർട്ട്' : 'Report'"></th>
                 </tr>
-              </template>
-              <tr x-show="selectedBatchForStudents && getTenantStudents().filter(s => s.batchId === selectedBatchForStudents.id).length === 0">
-                <td colspan="4" class="p-8 text-center text-slate-400 italic" x-text="t('noStudentsFound')"></td>
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+                <template x-for="std in (selectedBatchForStudents ? getTenantStudents().filter(s => s.batchId === selectedBatchForStudents.id) : [])" :key="std.id">
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-sans font-semibold text-xs font-bold text-slate-500" x-text="std.admissionNumber || '-'"></td>
+                    <td class="p-3 font-sans font-semibold text-xs font-bold text-slate-800" x-text="std.rollNumber || '-'"></td>
+                    <td class="p-3 flex items-center space-x-3">
+                      <div class="h-8 w-8 rounded-full bg-emerald-50 text-emerald-800 font-bold flex items-center justify-center uppercase overflow-hidden border border-emerald-100 flex-shrink-0">
+                        <template x-if="std.photo">
+                          <img :src="std.photo" class="h-full w-full object-cover" />
+                        </template>
+                        <template x-if="!std.photo">
+                          <span x-text="std.name.charAt(0)"></span>
+                        </template>
+                      </div>
+                      <span class="font-semibold text-slate-800" x-text="std.name"></span>
+                    </td>
+                    <td class="p-3 text-center">
+                      <button @click="printStudentReportCard(std)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1 mx-auto transition shadow-xs">
+                        <i class="fa-solid fa-file-invoice text-[10px]"></i>
+                        <span x-text="lang === 'ml' ? 'റിപ്പോർട്ട്' : 'Report'"></span>
+                      </button>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="selectedBatchForStudents && getTenantStudents().filter(s => s.batchId === selectedBatchForStudents.id).length === 0">
+                  <td colspan="4" class="p-8 text-center text-slate-400 italic" x-text="t('noStudentsFound')"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end flex-shrink-0">
@@ -4306,7 +4395,49 @@
 
         <!-- Report Table -->
         <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
+          <!-- Mobile Cards View -->
+          <div class="block sm:hidden divide-y divide-slate-100">
+            <template x-for="rec in batchReport.records">
+              <div class="p-4 space-y-3 hover:bg-slate-50 transition">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-slate-800 text-sm" x-text="rec.name"></span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold" :class="getComputedFeeStatus(rec) === 'Paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'" x-text="getComputedFeeStatus(rec)"></span>
+                </div>
+                <div class="grid grid-cols-4 gap-2 text-center bg-slate-50 p-2.5 rounded-xl text-xs">
+                  <div>
+                    <div class="text-[10px] text-slate-400 font-semibold uppercase">Working</div>
+                    <div class="font-bold text-slate-700" x-text="rec.workingDays"></div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-emerald-600 font-semibold uppercase">Present</div>
+                    <div class="font-bold text-emerald-600" x-text="rec.presentDays"></div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-rose-500 font-semibold uppercase">Absent</div>
+                    <div class="font-bold text-rose-500" x-text="rec.absentDays"></div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-amber-500 font-semibold uppercase">Late</div>
+                    <div class="font-bold text-amber-500" x-text="rec.lateDays"></div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                  <div class="flex items-center space-x-2">
+                    <span class="px-2 py-0.5 rounded-full font-bold text-xs" :class="rec.attendanceRate >= 80 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'" x-text="rec.attendanceRate + '%'"></span>
+                    <span class="px-2 py-0.5 rounded-full font-bold text-xs" :class="(rec.punctualityPoints || 0) > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'" x-text="(rec.punctualityPoints || 0) + ' Pts'"></span>
+                  </div>
+                  <button @click="triggerStudentReportCard(rec)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition">
+                    <i class="fa-solid fa-file-invoice text-[10px]"></i>
+                    <span>Generate</span>
+                  </button>
+                </div>
+              </div>
+            </template>
+            <div x-show="batchReport.records.length === 0" class="p-8 text-center text-slate-400 italic text-xs">No records compiled. Click refresh above to fetch data.</div>
+          </div>
+
+          <!-- Desktop Table View -->
+          <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase">
@@ -4392,7 +4523,29 @@
 
         <!-- Report Table -->
         <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
+          <!-- Mobile Cards View -->
+          <div class="block sm:hidden divide-y divide-slate-100">
+            <template x-for="rec in amalReport.records">
+              <div class="p-4 space-y-3 hover:bg-slate-50 transition">
+                <div class="font-bold text-slate-800 text-sm" x-text="rec.name"></div>
+                <div class="grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl text-xs">
+                  <template x-for="(hStats, idx) in rec.habits">
+                    <div class="flex items-center justify-between">
+                      <span class="text-slate-600 font-semibold" x-text="lang === 'ml' ? (amalReport.habits[idx]?.textMl || '') : (amalReport.habits[idx]?.textEn || '')"></span>
+                      <div class="flex items-center space-x-2 font-semibold text-xs">
+                        <span class="text-emerald-600 font-bold" x-text="'✔️ ' + hStats.completedCount"></span>
+                        <span class="text-rose-500 font-bold" x-text="'❌ ' + hStats.missingCount"></span>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+            <div x-show="amalReport.records.length === 0" class="p-8 text-center text-slate-400 italic text-xs">No records compiled. Click refresh above to fetch data.</div>
+          </div>
+
+          <!-- Desktop Table View -->
+          <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase">
@@ -4488,7 +4641,28 @@
 
         <!-- Detailed Daily Log Table -->
         <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
+          <!-- Mobile Cards View -->
+          <div class="block sm:hidden divide-y divide-slate-100">
+            <template x-for="rec in teacherReport.records" :key="rec.date">
+              <div class="p-3.5 space-y-2 hover:bg-slate-50 transition">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-slate-800 text-xs" x-text="rec.date"></span>
+                  <span class="px-2 py-0.5 rounded-full font-bold text-[10px]" 
+                        :class="rec.status === 'Present' ? 'bg-emerald-50 text-emerald-600' : (rec.status === 'Late' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')" 
+                        x-text="rec.status"></span>
+                </div>
+                <div class="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-lg text-slate-600">
+                  <div>In: <strong class="text-slate-800" x-text="rec.check_in || '-'"></strong></div>
+                  <div>Out: <strong class="text-slate-800" x-text="rec.check_out || '-'"></strong></div>
+                </div>
+                <div x-show="rec.remarks" class="text-[11px] text-slate-500 italic" x-text="rec.remarks"></div>
+              </div>
+            </template>
+            <div x-show="teacherReport.records.length === 0" class="p-8 text-center text-slate-400 italic text-xs">No records found. Click Refresh Report to fetch data.</div>
+          </div>
+
+          <!-- Desktop Table View -->
+          <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase">
