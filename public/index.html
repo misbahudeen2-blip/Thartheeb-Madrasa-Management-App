@@ -397,12 +397,121 @@
     }
 
   
-    /* Mobile-Friendly Biometric Tabs & Modal Typography */
+    /* ===== COMPREHENSIVE MOBILE RESPONSIVENESS ===== */
+    
+    /* Mobile Back Arrow Header for modals */
+    .mobile-modal-header {
+      display: none;
+    }
+
     @media (max-width: 640px) {
-      .modal-content {
-        padding: 0.85rem !important;
-        border-radius: 1.25rem !important;
+      /* --- MODAL FULL-SCREEN CONVERSION --- */
+      /* All Alpine modals → full-screen on mobile */
+      .modal-fullscreen-mobile {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-y: auto !important;
       }
+      .modal-fullscreen-mobile > div,
+      .modal-fullscreen-mobile > form {
+        min-height: 100vh;
+      }
+
+      /* Legacy JS modals → full-screen */
+      .modal-content {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0.85rem !important;
+        overflow-y: auto !important;
+      }
+
+      /* Mobile Back Arrow Header */
+      .mobile-modal-header {
+        display: flex !important;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: white;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+      .mobile-modal-header .back-btn {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: #f1f5f9;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        color: #475569;
+        font-size: 0.875rem;
+      }
+      .mobile-modal-header .back-btn:active {
+        background: #e2e8f0;
+      }
+      .mobile-modal-header h3 {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #1e293b;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Hide desktop close × button on mobile (back arrow replaces it) */
+      .close-btn {
+        display: none !important;
+      }
+
+      /* --- FONT SCALING --- */
+      h1, .text-4xl { font-size: 1.5rem !important; }
+      .text-6xl { font-size: 1.75rem !important; }
+      h2, .text-3xl { font-size: 1.2rem !important; }
+      h3, .text-2xl { font-size: 1.05rem !important; }
+      .text-xl { font-size: 0.95rem !important; }
+
+      /* --- COMPACT SPACING --- */
+      .p-6 { padding: 0.875rem !important; }
+      .p-8 { padding: 1rem !important; }
+      .px-6 { padding-left: 0.875rem !important; padding-right: 0.875rem !important; }
+      .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+      .py-16 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+      .gap-8 { gap: 1.25rem !important; }
+      .gap-6 { gap: 0.875rem !important; }
+      .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+        margin-top: 0.875rem !important;
+      }
+
+      /* --- TOUCH-FRIENDLY TARGETS --- */
+      button, select, input[type="checkbox"], .cursor-pointer {
+        min-height: 36px;
+      }
+      select, input[type="text"], input[type="number"], input[type="tel"],
+      input[type="email"], input[type="password"], input[type="date"], textarea {
+        font-size: 16px !important; /* Prevents iOS zoom on focus */
+      }
+
+      /* --- TABLE MOBILE OPTIMIZATION --- */
+      table { font-size: 0.7rem !important; }
+      th { padding: 0.375rem 0.5rem !important; font-size: 0.65rem !important; }
+      td { padding: 0.35rem 0.5rem !important; }
+
+      /* --- BIOMETRIC TAB CARDS --- */
       .details-tab-btn {
         padding: 0.25rem 0.65rem !important;
         font-size: 0.68rem !important;
@@ -415,6 +524,38 @@
         padding: 0.45rem 0.65rem !important;
         font-size: 0.75rem !important;
       }
+
+      /* --- LANDING PAGE MOBILE --- */
+      .hero-mobile-compact { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+
+      /* --- FORM GRIDS ON MOBILE --- */
+      .grid-cols-2 { grid-template-columns: 1fr !important; }
+      .sm\\:grid-cols-2 { grid-template-columns: 1fr !important; }
+      .sm\\:grid-cols-3 { grid-template-columns: repeat(2, 1fr) !important; }
+
+      /* --- MODAL INNER PADDING ON MOBILE --- */
+      .modal-body-mobile {
+        padding: 1rem !important;
+      }
+
+      /* --- STAT CARDS MOBILE --- */
+      .stat-card-mobile {
+        padding: 0.75rem !important;
+      }
+
+      /* --- REPORT TABLES MOBILE --- */
+      .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    /* Small phones (< 375px) */
+    @media (max-width: 374px) {
+      h1, .text-4xl { font-size: 1.25rem !important; }
+      .text-3xl { font-size: 1.1rem !important; }
+      .text-2xl { font-size: 0.95rem !important; }
+      button { font-size: 0.7rem !important; }
+      .p-4 { padding: 0.625rem !important; }
     }
 
   
@@ -1474,7 +1615,45 @@
 
           <!-- Teachers Table List -->
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile Teachers Card View -->
+            <div class="block sm:hidden divide-y divide-slate-100">
+              <template x-for="tchr in getTenantTeachers()" :key="tchr.id">
+                <div class="p-4 hover:bg-slate-50 transition">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-3">
+                      <div class="h-9 w-9 rounded-full bg-emerald-50 text-emerald-800 font-bold flex items-center justify-center uppercase" x-text="tchr.name.charAt(0)"></div>
+                      <div>
+                        <div class="font-bold text-sm text-slate-800" x-text="tchr.name"></div>
+                        <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 font-sans font-semibold text-[10px] rounded border border-emerald-200">
+                          <i class="fa-solid fa-fingerprint text-emerald-600"></i>
+                          <span x-text="tchr.user_id || tchr.id"></span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-xs text-slate-600 mb-1">
+                    <span class="font-semibold text-slate-500">Batches:</span> <span x-text="tchr.assignedBatchNames || 'None'"></span>
+                  </div>
+                  <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                    <div class="text-xs font-bold text-slate-700" x-text="'₹ ' + (tchr.salary || 0)"></div>
+                    <div class="flex space-x-3">
+                      <button @click="openTeacherReportModal(tchr)" class="text-emerald-600 hover:text-emerald-800 p-1" title="Report">
+                        <i class="fa-solid fa-chart-line text-sm"></i>
+                      </button>
+                      <button @click="openEditTeacherModal(tchr)" class="text-amber-500 hover:text-amber-700 p-1" title="Edit">
+                        <i class="fa-regular fa-pen-to-square text-sm"></i>
+                      </button>
+                      <button @click="deleteTeacher(tchr.id)" class="text-rose-500 hover:text-rose-700 p-1" title="Delete">
+                        <i class="fa-regular fa-trash-can text-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <div x-show="getTenantTeachers().length === 0" class="p-8 text-center text-slate-400 italic text-sm" x-text="t('noTeachersFound')"></div>
+            </div>
+
+            <div class="hidden sm:block overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
@@ -1541,7 +1720,40 @@
 
           <!-- Batches Table List -->
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile Batches Card View -->
+            <div class="block sm:hidden divide-y divide-slate-100">
+              <template x-for="bt in getTenantBatches()" :key="bt.id">
+                <div class="p-4 hover:bg-slate-50 transition">
+                  <div class="flex items-center justify-between mb-2">
+                    <button @click="openBatchStudentsModal(bt)" class="text-left text-emerald-800 hover:text-emerald-600 hover:underline transition font-bold text-sm" x-text="bt.name" title="Click to view students"></button>
+                    <span class="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-semibold" x-text="bt.shiftName || 'UNORGANIZED'"></span>
+                  </div>
+                  <div class="text-xs text-slate-600 mb-3">
+                    <span class="font-semibold text-slate-500" x-text="t('batchTeacher') + ':'"></span> <span class="font-semibold" x-text="getBatchTeacherName(bt.id)"></span>
+                  </div>
+                  <div class="flex items-center justify-end pt-3 border-t border-slate-100 space-x-4">
+                    <button @click="openBatchStudentsModal(bt)" class="text-blue-600 hover:text-blue-750 p-1" title="View Students">
+                      <i class="fa-solid fa-users text-sm"></i>
+                    </button>
+                    <button @click="openEditBatchModal(bt)" class="text-amber-500 hover:text-amber-700 p-1" title="Edit">
+                      <i class="fa-solid fa-pen text-sm"></i>
+                    </button>
+                    <button @click="batchReport.batchId = bt.id; batchReport.batchName = bt.name; batchReport.records = []; batchReport.show = true; fetchBatchComplianceReport();" class="text-emerald-600 hover:text-emerald-700 p-1" title="Attendance + Fee Report">
+                      <i class="fa-solid fa-file-invoice text-sm"></i>
+                    </button>
+                    <button @click="amalReport.batchId = bt.id; amalReport.batchName = bt.name; amalReport.records = []; amalReport.show = true; fetchAmalComplianceReport();" class="text-indigo-600 hover:text-indigo-700 p-1" title="Amal Report">
+                      <i class="fa-solid fa-circle-check text-sm"></i>
+                    </button>
+                    <button @click="deleteBatch(bt.id)" class="text-rose-500 hover:text-rose-700 p-1" title="Delete">
+                      <i class="fa-regular fa-trash-can text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+              </template>
+              <div x-show="getTenantBatches().length === 0" class="p-8 text-center text-slate-400 italic text-sm" x-text="t('noBatchesFound')"></div>
+            </div>
+
+            <div class="hidden sm:block overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
@@ -1604,7 +1816,35 @@
 
           <!-- Shifts Table List -->
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile Shifts Card View -->
+            <div class="block sm:hidden divide-y divide-slate-100">
+              <template x-for="sh in shifts" :key="sh.shift_id">
+                <div class="p-4 hover:bg-slate-50 transition">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="font-bold text-sm text-slate-800" x-text="sh.shift_name"></div>
+                    <span class="px-2.5 py-1 rounded bg-indigo-50 text-indigo-700 text-[10px] font-semibold border border-indigo-100" x-text="'Grace: ' + sh.grace_minutes + 'm'"></span>
+                  </div>
+                  <div class="text-xs text-slate-600 mb-2">
+                    <span class="font-semibold text-slate-500">Timings:</span> <span class="font-semibold" x-text="sh.start_time + ' - ' + sh.end_time"></span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 space-y-1 mb-3">
+                    <div><span class="font-semibold">IN Range:</span> <span x-text="sh.checkin_start + ' - ' + sh.checkin_end"></span></div>
+                    <div><span class="font-semibold">OUT Range:</span> <span x-text="sh.checkout_start + ' - ' + sh.checkout_end"></span></div>
+                  </div>
+                  <div class="flex items-center justify-end pt-3 border-t border-slate-100 space-x-4">
+                    <button @click="openEditShiftModal(sh)" class="text-amber-500 hover:text-amber-700 p-1" title="Edit Shift">
+                      <i class="fa-solid fa-pen text-sm"></i>
+                    </button>
+                    <button @click="deleteShift(sh.shift_id)" class="text-rose-500 hover:text-rose-700 p-1" title="Delete Shift">
+                      <i class="fa-regular fa-trash-can text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+              </template>
+              <div x-show="shifts.length === 0" class="p-8 text-center text-slate-400 italic text-sm">No shifts configured. Click Create Shift above to add one.</div>
+            </div>
+
+            <div class="hidden sm:block overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
@@ -1694,7 +1934,58 @@
 
           <!-- Fee Ledger List -->
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Mobile Fees Card View -->
+            <div class="block sm:hidden divide-y divide-slate-100">
+              <template x-for="std in getFilteredFeeStudents()" :key="std.id">
+                <div class="p-4 hover:bg-slate-50 transition">
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                      <div class="h-9 w-9 rounded-full bg-emerald-50 text-emerald-800 font-bold flex items-center justify-center uppercase" x-text="std.name.charAt(0)"></div>
+                      <div>
+                        <div class="font-bold text-sm text-slate-800" x-text="std.name"></div>
+                        <span class="px-2 py-0.5 mt-1 inline-block rounded bg-slate-100 text-slate-600 font-sans font-semibold text-[10px] border border-slate-200" x-text="'Roll: ' + (std.rollNumber || '-')"></span>
+                      </div>
+                    </div>
+                    <div class="font-bold text-slate-800 text-sm" x-text="'₹ ' + std.monthlyFee"></div>
+                  </div>
+                  
+                  <!-- Month toggles & add fee -->
+                  <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                      <span class="text-[10px] font-bold text-slate-500 uppercase" x-text="t('juneFee')"></span>
+                      <button @click="toggleMonthlyFeeStatus(std.id, 'June')" :class="getFeeStatus(std.id, 'June') ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-100'" class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition">
+                        <i :class="getFeeStatus(std.id, 'June') ? 'fa-solid fa-circle-check' : 'fa-solid fa-clock'" class="mr-1"></i>
+                        <span x-text="getFeeStatus(std.id, 'June') ? t('paid') : t('pending')"></span>
+                      </button>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                      <span class="text-[10px] font-bold text-slate-500 uppercase" x-text="t('julyFee')"></span>
+                      <button @click="toggleMonthlyFeeStatus(std.id, 'July')" :class="getFeeStatus(std.id, 'July') ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-100'" class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition">
+                        <i :class="getFeeStatus(std.id, 'July') ? 'fa-solid fa-circle-check' : 'fa-solid fa-clock'" class="mr-1"></i>
+                        <span x-text="getFeeStatus(std.id, 'July') ? t('paid') : t('pending')"></span>
+                      </button>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                      <span class="text-[10px] font-bold text-slate-500 uppercase" x-text="t('augustFee')"></span>
+                      <button @click="toggleMonthlyFeeStatus(std.id, 'August')" :class="getFeeStatus(std.id, 'August') ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-100'" class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition">
+                        <i :class="getFeeStatus(std.id, 'August') ? 'fa-solid fa-circle-check' : 'fa-solid fa-clock'" class="mr-1"></i>
+                        <span x-text="getFeeStatus(std.id, 'August') ? t('paid') : t('pending')"></span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-center pt-2 border-t border-slate-100">
+                    <button @click="openAddAdditionalFeeModal(std)" class="w-full py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-bold border border-emerald-200/50 flex items-center justify-center gap-1.5 transition shadow-sm">
+                      <i class="fa-solid fa-plus text-[10px]"></i>
+                      <span>Add Additional Fee</span>
+                    </button>
+                  </div>
+                </div>
+              </template>
+              <div x-show="getFilteredFeeStudents().length === 0" class="p-8 text-center text-slate-400 italic text-sm" x-text="t('noStudentsFound')"></div>
+            </div>
+
+            <div class="hidden sm:block overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
@@ -2360,7 +2651,34 @@
                     <span>Real-time Ingestion Active (5s refresh)</span>
                   </div>
                 </div>
-                <div class="overflow-x-auto">
+                <!-- Mobile Punch Feeds Card View -->
+                <div class="block sm:hidden divide-y divide-slate-100">
+                  <template x-for="row in attendanceLogs">
+                    <div class="p-4 hover:bg-slate-50 transition">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="font-bold text-sm text-slate-800" x-text="row.name"></div>
+                        <div class="inline-flex items-center gap-1">
+                          <span class="px-2 py-0.5 bg-slate-100 text-slate-800 font-bold rounded text-[10px] border border-slate-200" x-text="row.checkInTime ? formatTimeToAMPM(row.checkInTime) : '-'"></span>
+                          <span :class="{
+                            'bg-emerald-50 text-emerald-700 border-emerald-200': row.status === 'Present',
+                            'bg-amber-50 text-amber-700 border-amber-200': row.status === 'Late',
+                            'bg-rose-50 text-rose-700 border-rose-200': row.status === 'Absent'
+                          }" class="px-2 py-0.5 rounded text-[10px] font-bold border" x-text="row.status"></span>
+                        </div>
+                      </div>
+                      <div class="flex justify-between items-end text-xs text-slate-500">
+                        <div>
+                          <div class="font-semibold text-emerald-800 mb-0.5"><span x-text="row.batchName || 'Unorganized'"></span></div>
+                          <div class="text-[10px]">Ustadh: <span class="font-semibold text-slate-700" x-text="row.teacherName || 'None'"></span></div>
+                        </div>
+                        <span class="font-bold text-[10px] bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200" x-text="row.rollNumber ? '#' + row.rollNumber : '-'"></span>
+                      </div>
+                    </div>
+                  </template>
+                  <div x-show="attendanceLogs.length === 0" class="p-8 text-center text-slate-400 italic text-sm">No biometric ingestions today yet.</div>
+                </div>
+
+                <div class="hidden sm:block overflow-x-auto">
                   <table class="w-full text-left border-collapse">
                     <thead>
                       <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider">
@@ -2954,7 +3272,11 @@
   <!-- MODAL: CUSTOM RECEIPT CONFIRMATION -->
   <div x-show="modals.receiptConfirm" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.receiptConfirm = false"></div>
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 transform transition-all duration-300">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 transform transition-all duration-300 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.receiptConfirm = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Payment Receipt</h3>
+      </div>
       <div class="p-6 bg-gradient-to-r from-emerald-800 to-islamic-800 text-white text-center relative">
         <div class="absolute inset-0 islamic-pattern mix-blend-overlay"></div>
         <div class="mx-auto w-16 h-16 bg-white/10 rounded-full border border-gold-600/30 flex items-center justify-center mb-3">
@@ -2986,7 +3308,11 @@
   <!-- MODAL: ADD ADDITIONAL FEE -->
   <div x-show="modals.addAdditionalFee" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.addAdditionalFee = false"></div>
-    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] transform transition-all duration-300">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] transform transition-all duration-300 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.addAdditionalFee = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Additional Fee</h3>
+      </div>
       <!-- Modal Header -->
       <div class="p-5 bg-gradient-to-r from-emerald-800 to-islamic-800 text-white flex items-center justify-between relative font-inter">
         <div class="absolute inset-0 islamic-pattern mix-blend-overlay"></div>
@@ -3178,7 +3504,11 @@
   <!-- MODAL: ADD / EDIT STUDENT -->
   <div x-show="modals.addStudent" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.addStudent = false"></div>
-    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.addStudent = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Add / Edit Student</h3>
+      </div>
       <!-- Header -->
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
         <h3 class="text-lg font-bold font-cairo" x-text="isEditingStudent ? (lang === 'ml' ? 'വിദ്യാർത്ഥിയുടെ വിവരങ്ങൾ തിരുത്തുക' : 'Edit Student Details') : t('addNewStudentTitle')"></h3>
@@ -3396,7 +3726,11 @@
   <!-- MODAL: IMPORT TEACHERS EXCEL -->
   <div x-show="modals.importTeacherExcel" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.importTeacherExcel = false"></div>
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.importTeacherExcel = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Import Teachers</h3>
+      </div>
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
         <div class="flex items-center space-x-2.5">
           <i class="fa-solid fa-file-excel text-xl text-emerald-300"></i>
@@ -3438,7 +3772,11 @@
   <!-- MODAL: ADD TEACHER -->
   <div x-show="modals.addTeacher" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.addTeacher = false"></div>
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.addTeacher = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Add / Edit Teacher</h3>
+      </div>
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
         <h3 class="text-lg font-bold font-cairo" x-text="isEditingTeacher ? (lang === 'ml' ? 'അധ്യാപക വിവരങ്ങൾ മാറ്റുക' : 'Edit Teacher Profile') : t('addNewTeacherTitle')"></h3>
         <button @click="modals.addTeacher = false" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -3562,7 +3900,11 @@
   <!-- MODAL: BATCH STUDENTS LIST -->
   <div x-show="modals.batchStudents" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.batchStudents = false"></div>
-    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 flex flex-col max-h-[85vh]">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 flex flex-col max-h-[85vh] modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.batchStudents = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Batch Students</h3>
+      </div>
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between flex-shrink-0">
         <h3 class="text-lg font-bold font-cairo" x-text="(lang === 'ml' ? 'ബാച്ചിലെ വിദ്യാർത്ഥികൾ: ' : 'Students in Batch: ') + (selectedBatchForStudents ? selectedBatchForStudents.name : '')"></h3>
         <button @click="modals.batchStudents = false" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -3619,7 +3961,11 @@
   <!-- MODAL: ADD/EDIT BATCH -->
   <div x-show="modals.addBatch" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.addBatch = false"></div>
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.addBatch = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Add / Edit Batch</h3>
+      </div>
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
         <h3 class="text-lg font-bold font-cairo" x-text="isEditingBatch ? (lang === 'ml' ? 'ബാച്ച് വിവരങ്ങൾ മാറ്റുക' : 'Edit Batch Details') : (lang === 'ml' ? 'പുതിയ ബാച്ച് ചേർക്കുക' : 'Add New Batch')"></h3>
         <button @click="modals.addBatch = false" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -3696,7 +4042,11 @@
   <!-- MODAL: ADD/EDIT SHIFT -->
   <div x-show="modals.shift" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.shift = false"></div>
-    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 overflow-y-auto" style="max-height: 90vh;">
+    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 overflow-y-auto modal-fullscreen-mobile" style="max-height: 90vh;">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.shift = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Shift Settings</h3>
+      </div>
       <button class="absolute top-4 right-4 text-slate-400 hover:text-slate-650 text-xl font-bold z-20" @click="modals.shift = false">&times;</button>
       
       <div class="p-6 md:p-8 space-y-4">
@@ -3895,7 +4245,11 @@
   <!-- MODAL: BATCH COMPLIANCE REPORT -->
   <div x-show="batchReport.show" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="batchReport.show = false"></div>
-    <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 overflow-y-auto">
+    <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 overflow-y-auto modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="batchReport.show = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Batch Report</h3>
+      </div>
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-file-invoice-dollar text-lg text-amber-400"></i>
@@ -3985,7 +4339,11 @@
   <!-- MODAL: AMAL COMPLIANCE REPORT -->
   <div x-show="amalReport.show" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="amalReport.show = false"></div>
-    <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 overflow-y-auto">
+    <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 overflow-y-auto modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="amalReport.show = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Amal Report</h3>
+      </div>
       <div class="p-5 bg-indigo-900 text-white flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-circle-check text-lg text-amber-400"></i>
@@ -4053,7 +4411,11 @@
   <!-- MODAL: TEACHER PERFORMANCE REPORT -->
   <div x-show="teacherReport.show" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="teacherReport.show = false"></div>
-    <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 overflow-y-auto">
+    <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 overflow-y-auto modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="teacherReport.show = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Teacher Report</h3>
+      </div>
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-chalkboard-user text-lg text-amber-400"></i>
@@ -4144,7 +4506,11 @@
   <!-- MODAL: NOTIFICATIONS -->
   <div x-show="modals.notifications" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.notifications = false"></div>
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.notifications = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Notifications</h3>
+      </div>
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-bell text-lg"></i>
@@ -4245,7 +4611,11 @@
   <!-- Modal: Onboard New Madrasa (Super Admin) -->
   <div x-show="modals.superAdminOnboard" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.superAdminOnboard = false"></div>
-    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.superAdminOnboard = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Onboard Madrasa</h3>
+      </div>
       <div class="p-5 bg-slate-900 text-white flex items-center justify-between flex-shrink-0 border-b border-slate-800">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-kaaba text-amber-400 text-xl"></i>
@@ -4321,7 +4691,11 @@
   <!-- Modal: Edit Madrasa Subscription & Status (Super Admin) -->
   <div x-show="modals.superAdminEditSub" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.superAdminEditSub = false"></div>
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 p-6 space-y-4">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 p-6 space-y-4 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.superAdminEditSub = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Edit Subscription</h3>
+      </div>
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
           <h3 class="text-base font-bold font-cairo text-slate-800" x-text="editSubForm.madrasaName"></h3>
@@ -4439,7 +4813,11 @@
   <!-- Modal: Add New Habit / Amal -->
   <div x-show="modals.addAmal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.addAmal = false"></div>
-    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.addAmal = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Daily Amal</h3>
+      </div>
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between flex-shrink-0">
         <div>
           <h3 class="text-lg font-bold font-cairo" x-text="lang === 'ml' ? 'ദിവസേനയുള്ള അമലുകൾ ചേർക്കുക' : 'Configure Daily Amal Activities'"></h3>
@@ -4515,7 +4893,11 @@
   <!-- MODAL: SMART CARD ATTENDANCE SCANNER SIMULATOR -->
   <div x-show="modals.scanner" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.scanner = false"></div>
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.scanner = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Card Scanner</h3>
+      </div>
       
       <div class="p-5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-between font-bold">
         <h3 class="text-lg font-bold font-cairo flex items-center gap-2">
@@ -4566,7 +4948,11 @@
   <!-- MODAL: EXCEL BULK IMPORT PREVIEW -->
   <div x-show="importPreview.show" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="importPreview.show = false"></div>
-    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 flex flex-col max-h-[85vh]">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 flex flex-col max-h-[85vh] modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="importPreview.show = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Import Preview</h3>
+      </div>
       
       <!-- Modal Header -->
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
@@ -4726,7 +5112,11 @@
   <!-- MODAL: GOOGLE SHEETS IMPORT LINK -->
   <div x-show="modals.googleSheets" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.googleSheets = false"></div>
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.googleSheets = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Google Sheets Import</h3>
+      </div>
       
       <div class="p-5 bg-emerald-800 text-white flex items-center justify-between">
         <h3 class="text-lg font-bold font-cairo flex items-center gap-2">
@@ -4770,7 +5160,11 @@
   <!-- MODAL: VIEW STUDENT PROFILE -->
   <div x-show="modals.studentProfile" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.studentProfile = false"></div>
-    <div class="bg-[#1d2309] text-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-gold-600/30 flex flex-col max-h-[90vh]">
+    <div class="bg-[#1d2309] text-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-gold-600/30 flex flex-col max-h-[90vh] modal-fullscreen-mobile">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.studentProfile = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Student Profile</h3>
+      </div>
       <div class="absolute inset-0 islamic-pattern opacity-10 pointer-events-none"></div>
       
       <!-- Modal Header -->
@@ -10771,6 +11165,10 @@
   <!-- Excel Import Modal -->
   <div class="modal" id="importModal">
     <div class="modal-content">
+      <div class="mobile-modal-header">
+        <button class="back-btn" onclick="closeImportModal()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Import Data</h3>
+      </div>
       <button class="close-btn" onclick="closeImportModal()">&times;</button>
       <div class="modal-title">Import Student Roster</div>
       
@@ -10802,7 +11200,11 @@
 
   <!-- Shifts Modal -->
   <div class="modal" id="shiftsModal">
-    <div class="modal-content" style="width: 600px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-content" style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <div class="mobile-modal-header">
+        <button class="back-btn" onclick="closeShiftsModal()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Shift Settings</h3>
+      </div>
       <button class="close-btn" onclick="closeShiftsModal()">&times;</button>
       <div class="modal-title" id="shiftsModalTitle">Configure Time Shifts</div>
       
@@ -10977,7 +11379,11 @@
 
   <!-- Batches Modal -->
   <div class="modal" id="batchesModal">
-    <div class="modal-content" style="width: 600px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-content" style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <div class="mobile-modal-header">
+        <button class="back-btn" onclick="closeBatchesModal()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Batch Settings</h3>
+      </div>
       <button class="close-btn" onclick="closeBatchesModal()">&times;</button>
       <div class="modal-title" id="batchesModalTitle">Configure Batches</div>
       
@@ -11034,7 +11440,11 @@
 
   <!-- Monthly Report Modal -->
   <div class="modal" id="monthlyReportModal">
-    <div class="modal-content" style="width: 800px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-content" style="max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <div class="mobile-modal-header">
+        <button class="back-btn" onclick="closeMonthlyReportModal()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Monthly Report</h3>
+      </div>
       <button class="close-btn" onclick="closeMonthlyReportModal()">&times;</button>
       <div class="modal-title">Monthly Batch Compliance & Attendance Report</div>
       
@@ -11127,7 +11537,11 @@
 
   <!-- Student Report Modal -->
   <div id="studentReportModal" class="modal">
-    <div class="modal-content" style="max-width: 500px; width: 90vw;">
+    <div class="modal-content" style="max-width: 500px; width: 100%;">
+      <div class="mobile-modal-header">
+        <button class="back-btn" onclick="closeStudentReportModal()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Student Report</h3>
+      </div>
       <button onclick="closeStudentReportModal()" class="close-btn">&times;</button>
       
       <div style="font-weight: 700; font-size: 1.2rem; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; font-family: 'Cairo', sans-serif;">Generate Student Report</div>
@@ -11299,6 +11713,10 @@
   <!-- Attendance Details Modal (Wider Layout with Quick Tabs) -->
   <div id="attendanceDetailsModal" class="modal">
     <div class="modal-content" style="max-width: 1000px; width: 94vw; max-height: 90vh; display: flex; flex-direction: column; gap: 1rem; border-radius: 1.5rem; padding: 1.5rem;">
+      <div class="mobile-modal-header">
+        <button class="back-btn" onclick="closeAttendanceDetailsModal()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Attendance Details</h3>
+      </div>
       <button onclick="closeAttendanceDetailsModal()" class="close-btn">&times;</button>
       
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 pr-8">
