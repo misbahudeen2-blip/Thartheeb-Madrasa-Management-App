@@ -4530,7 +4530,13 @@
           <i class="fa-solid fa-bell text-lg"></i>
           <h3 class="text-lg font-bold font-cairo" x-text="lang === 'ml' ? 'അറിയിപ്പുകൾ' : 'Notifications Center'"></h3>
         </div>
-        <button @click="modals.notifications = false" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <div class="flex items-center space-x-2">
+          <button @click="modals.sendBroadcast = true; modals.notifications = false" class="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 transition">
+            <i class="fa-solid fa-paper-plane text-[10px]"></i>
+            <span>Send Alert</span>
+          </button>
+          <button @click="modals.notifications = false" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
       </div>
 
       <div class="p-6 max-h-[400px] overflow-y-auto space-y-3">
@@ -4551,6 +4557,113 @@
 
       <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
         <button @click="modals.notifications = false" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-xs font-semibold text-slate-700 transition" x-text="lang === 'ml' ? 'അടയ്ക്കുക' : 'Close'"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN PUSH BROADCAST & CUSTOM NOTIFICATION -->
+  <div x-show="modals.sendBroadcast" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4" x-transition x-cloak>
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="modals.sendBroadcast = false"></div>
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-slate-100 modal-fullscreen-mobile flex flex-col max-h-[90vh]">
+      <div class="mobile-modal-header">
+        <button class="back-btn" @click="modals.sendBroadcast = false"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3>Send Push Alert</h3>
+      </div>
+
+      <!-- Header -->
+      <div class="p-5 bg-gradient-to-r from-emerald-800 to-islamic-800 text-white flex items-center justify-between relative flex-shrink-0">
+        <div class="absolute inset-0 islamic-pattern mix-blend-overlay"></div>
+        <div class="flex items-center space-x-2.5 z-10">
+          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center">
+            <i class="fa-solid fa-bullhorn text-sm"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold font-cairo">Send Push Alert / Broadcast</h3>
+            <p class="text-[11px] text-emerald-200">Send instant notification to targeted parents' phones</p>
+          </div>
+        </div>
+        <button @click="modals.sendBroadcast = false" class="text-white/80 hover:text-white z-10"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <!-- Body Form -->
+      <div class="p-6 overflow-y-auto space-y-4 flex-1">
+        <!-- Message Title -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Notification Title <span class="text-rose-500">*</span></label>
+          <input type="text" x-model="broadcastForm.title" placeholder="e.g. Trim nails for Class 3 / Holiday Notice" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-xs font-medium" />
+        </div>
+
+        <!-- Message Body -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Message Content <span class="text-rose-500">*</span></label>
+          <textarea x-model="broadcastForm.body" rows="3" placeholder="Type custom message body to send to parents' phones..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-xs font-medium resize-none"></textarea>
+        </div>
+
+        <!-- Target Audience Selection -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Target Recipient Audience</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition" :class="broadcastForm.targetType === 'all' ? 'bg-emerald-50/50 border-emerald-300 text-emerald-900 font-bold' : 'text-slate-600'">
+              <input type="radio" value="all" x-model="broadcastForm.targetType" class="text-emerald-600" />
+              <span class="text-xs">📢 All Users (Broadcast)</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition" :class="broadcastForm.targetType === 'batch' ? 'bg-emerald-50/50 border-emerald-300 text-emerald-900 font-bold' : 'text-slate-600'">
+              <input type="radio" value="batch" x-model="broadcastForm.targetType" class="text-emerald-600" />
+              <span class="text-xs">🏫 By Class / Batch</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition" :class="broadcastForm.targetType === 'pending_fees' ? 'bg-emerald-50/50 border-emerald-300 text-emerald-900 font-bold' : 'text-slate-600'">
+              <input type="radio" value="pending_fees" x-model="broadcastForm.targetType" class="text-emerald-600" />
+              <span class="text-xs">💰 Unpaid / Pending Fees</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition" :class="broadcastForm.targetType === 'individual' ? 'bg-emerald-50/50 border-emerald-300 text-emerald-900 font-bold' : 'text-slate-600'">
+              <input type="radio" value="individual" x-model="broadcastForm.targetType" class="text-emerald-600" />
+              <span class="text-xs">👤 Specific Students</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Conditional Filter: Batch Select -->
+        <div x-show="broadcastForm.targetType === 'batch'" class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Select Target Class / Batch</label>
+          <select x-model="broadcastForm.targetBatchId" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold">
+            <option value="">-- All Batches --</option>
+            <template x-for="bt in getTenantBatches()" :key="bt.id">
+              <option :value="bt.id" x-text="bt.name"></option>
+            </template>
+          </select>
+        </div>
+
+        <!-- Conditional Filter: Pending Fees Month -->
+        <div x-show="broadcastForm.targetType === 'pending_fees'" class="p-3 bg-rose-50/50 rounded-xl border border-rose-100">
+          <label class="block text-xs font-bold text-rose-800 mb-1">Target Pending Fee Month</label>
+          <select x-model="broadcastForm.targetMonth" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs font-semibold bg-white">
+            <option value="June">June Fee Pending</option>
+            <option value="July">July Fee Pending</option>
+            <option value="August">August Fee Pending</option>
+          </select>
+        </div>
+
+        <!-- Conditional Filter: Specific Students Selection -->
+        <div x-show="broadcastForm.targetType === 'individual'" class="p-3 bg-blue-50/50 rounded-xl border border-blue-100 max-h-[160px] overflow-y-auto space-y-1">
+          <label class="block text-xs font-bold text-blue-900 mb-1">Select Individual Students</label>
+          <template x-for="std in students" :key="std.id">
+            <label class="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer p-1 rounded hover:bg-blue-100/50">
+              <input type="checkbox" :value="std.id" x-model="broadcastForm.selectedStudentIds" class="text-emerald-600 rounded" />
+              <span class="font-semibold" x-text="std.name"></span>
+              <span class="text-[10px] text-slate-400" x-text="'(' + (std.batchName || 'No Batch') + ')'"></span>
+            </label>
+          </template>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-2 flex-shrink-0">
+        <button type="button" @click="modals.sendBroadcast = false" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+        <button type="button" @click="submitBroadcastNotification()" :disabled="broadcastForm.isSending" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-700/20 flex items-center gap-1.5 transition">
+          <i x-show="!broadcastForm.isSending" class="fa-solid fa-paper-plane text-xs"></i>
+          <i x-show="broadcastForm.isSending" class="fa-solid fa-spinner fa-spin text-xs"></i>
+          <span x-text="broadcastForm.isSending ? 'Sending...' : 'Send Push Alert'"></span>
+        </button>
       </div>
     </div>
   </div>
@@ -5515,7 +5628,56 @@
           biometricDetails: false,
           biometricBatchDetails: false,
           receiptConfirm: false,
-          addAdditionalFee: false
+          addAdditionalFee: false,
+          sendBroadcast: false
+        },
+        broadcastForm: {
+          title: '',
+          body: '',
+          targetType: 'all', // 'all', 'batch', 'pending_fees', 'individual'
+          targetBatchId: '',
+          targetMonth: 'June',
+          selectedStudentIds: [],
+          isSending: false
+        },
+        async submitBroadcastNotification() {
+          if (!this.broadcastForm.title || !this.broadcastForm.body) {
+            this.showToast(this.lang === 'ml' ? 'ദയവായി ടൈറ്റിലും സന്ദേശവും ടൈപ്പ് ചെയ്യുക!' : 'Please enter title and message body!', 'error');
+            return;
+          }
+          this.broadcastForm.isSending = true;
+          try {
+            let targetVal = '';
+            if (this.broadcastForm.targetType === 'batch') targetVal = this.broadcastForm.targetBatchId;
+            else if (this.broadcastForm.targetType === 'individual') targetVal = this.broadcastForm.selectedStudentIds;
+
+            const res = await fetch('/api/notifications/send-broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: this.broadcastForm.title,
+                body: this.broadcastForm.body,
+                target_type: this.broadcastForm.targetType,
+                target_value: targetVal,
+                month: this.broadcastForm.targetMonth,
+                tenant_id: this.currentTenant ? this.currentTenant.id : ''
+              })
+            });
+            const result = await res.json();
+            if (res.ok && result.success) {
+              this.showToast(this.lang === 'ml' ? `${result.recipientsCount} രക്ഷിതാക്കൾക്ക് അറിയിപ്പ് വിജയകരമായി അയച്ചു!` : result.message);
+              this.modals.sendBroadcast = false;
+              this.broadcastForm.title = '';
+              this.broadcastForm.body = '';
+              this.broadcastForm.selectedStudentIds = [];
+            } else {
+              this.showToast(result.error || 'Failed to send notification broadcast', 'error');
+            }
+          } catch(err) {
+            this.showToast('Network error, failed to send broadcast.', 'error');
+          } finally {
+            this.broadcastForm.isSending = false;
+          }
         },
         receiptConfirmData: {
           studentId: null,

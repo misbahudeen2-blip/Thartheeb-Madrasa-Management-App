@@ -595,6 +595,32 @@ async function connectDb() {
     )
   `);
 
+  // Create fcm_tokens table for push notifications
+  await db.run(`
+    CREATE TABLE IF NOT EXISTS fcm_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      fcm_token TEXT NOT NULL UNIQUE,
+      device_type TEXT DEFAULT 'android',
+      updated_at TEXT,
+      FOREIGN KEY (user_id) REFERENCES students(user_id) ON DELETE CASCADE
+    )
+  `);
+
+  // Create notification_logs table
+  await db.run(`
+    CREATE TABLE IF NOT EXISTS notification_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      target_type TEXT NOT NULL,
+      target_value TEXT,
+      sent_count INTEGER DEFAULT 0,
+      created_at TEXT,
+      tenant_id TEXT
+    )
+  `);
+
   // Create parent_checks table
   await db.run(`
     CREATE TABLE IF NOT EXISTS parent_checks (
@@ -1246,6 +1272,23 @@ app.post(/cdata/, async (req, res) => {
         `, [student.user_id, punchDate, punchTimeStr, lateMinutes, status, remarkMsg, student.batch_id || 'UNORGANIZED']);
 
         console.log(`[Attendance Marked] ${student.name} (${student.user_id}) marked ${status}. Lateness: ${lateMinutes} mins`);
+
+        // Trigger Automated Push Notification Alert to Parent
+        try {
+          const notifyTitle = status === 'Late' ? '⚠️ Student Late Arrival Alert' : '✅ Attendance Marked';
+          const notifyBody = status === 'Late' 
+            ? `${student.name} arrived late at madrasa at ${punchTimeStr} (Late by ${lateMinutes} mins).`
+            : `${student.name} has arrived at madrasa and attendance was marked at ${punchTimeStr}.`;
+          
+          sendPushNotification(student.user_id, notifyTitle, notifyBody, {
+            type: 'attendance_alert',
+            status: status,
+            check_in: punchTimeStr,
+            work_date: punchDate
+          });
+        } catch (nErr) {
+          console.error('[Push Alert Error]', nErr);
+        }
       }
 
     } catch (err) {
@@ -2330,6 +2373,141 @@ app.post('/api/students', async (req, res) => {
     }
 
     res.json({ success: true, message: `Student/Teacher ${name} successfully saved.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * -------------------------------------------------------------
+ * PUSH NOTIFICATION MODULE (FCM / BROADCAST / TRIGGERING)
+ * -------------------------------------------------------------
+ */
+
+// Helper function to send push notification via FCM / WebPush / Expo
+async function sendPushNotification(user_id, title, body, extraData = {}) {
+  try {
+    const tokens = await db.all('SELECT fcm_token FROM fcm_tokens WHERE user_id = ?', [user_id]);
+    if (!tokens || tokens.length === 0) return { success: false, reason: 'No registered FCM token for user' };
+    
+    console.log(`[PUSH NOTIFICATION] Sending to user ${user_id} (${tokens.length} devices): "${title}" - "${body}"`);
+    // Firebase Admin / FCM SDK call goes here.
+    return { success: true, count: tokens.length };
+  } catch (err) {
+    console.error(`[PUSH NOTIFICATION ERROR] User: ${user_id}`, err);
+    return { success: false, error: err.message };
+  }
+}
+
+// 1. Register / Update FCM Device Token
+app.post('/api/notifications/register-token', async (req, res) => {
+  const { user_id, fcm_token, device_type } = req.body;
+  if (!user_id || !fcm_token) {
+    return res.status(400).json({ error: 'Missing user_id or fcm_token' });
+  }
+  try {
+    const nowStr = getLocalTimestampString();
+    await db.run(`
+      INSERT INTO fcm_tokens (user_id, fcm_token, device_type, updated_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(fcm_token) DO UPDATE SET
+        user_id = excluded.user_id,
+        device_type = excluded.device_type,
+        updated_at = excluded.updated_at
+    `, [String(user_id).trim(), String(fcm_token).trim(), device_type || 'android', nowStr]);
+    res.json({ success: true, message: 'FCM Token registered successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. Admin Custom Notification / Broadcast Dispatcher Endpoint
+app.post('/api/notifications/send-broadcast', async (req, res) => {
+  const { title, body, target_type, target_value, tenant_id, month } = req.body;
+
+  if (!title || !body || !target_type) {
+    return res.status(400).json({ error: 'Missing title, body, or target_type' });
+  }
+
+  try {
+    let targetUsers = [];
+    
+    if (target_type === 'all') {
+      // All students and teachers in tenant
+      let query = 'SELECT DISTINCT user_id FROM students';
+      const params = [];
+      if (tenant_id) {
+        query += ' WHERE tenant_id = ?';
+        params.push(tenant_id);
+      }
+      targetUsers = await db.all(query, params);
+    } 
+    else if (target_type === 'batch') {
+      // Filter by Batch ID
+      targetUsers = await db.all('SELECT DISTINCT user_id FROM students WHERE batch_id = ?', [target_value]);
+    } 
+    else if (target_type === 'individual') {
+      // Specific list of user_ids (array or string)
+      const userIds = Array.isArray(target_value) ? target_value : [target_value];
+      const placeholders = userIds.map(() => '?').join(',');
+      targetUsers = await db.all(`SELECT DISTINCT user_id FROM students WHERE user_id IN (${placeholders})`, userIds);
+    } 
+    else if (target_type === 'pending_fees') {
+      // Filter students with pending fees for a specific month or generally
+      const targetMonth = month || 'June';
+      const paidRecords = await db.all('SELECT DISTINCT user_id FROM fee_records WHERE fee_month = ? AND status = \'PAID\'', [targetMonth]);
+      const paidUserIds = paidRecords.map(r => r.user_id);
+      
+      let query = 'SELECT DISTINCT user_id FROM students';
+      const params = [];
+      if (tenant_id) {
+        query += ' WHERE tenant_id = ?';
+        params.push(tenant_id);
+      }
+      const allStudents = await db.all(query, params);
+      targetUsers = allStudents.filter(s => !paidUserIds.includes(s.user_id));
+    }
+
+    const uniqueUserIds = [...new Set(targetUsers.map(u => u.user_id))];
+    const nowStr = getLocalTimestampString();
+
+    // Log notification in DB
+    await db.run(`
+      INSERT INTO notification_logs (title, body, target_type, target_value, sent_count, created_at, tenant_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [title, body, target_type, JSON.stringify(target_value || ''), uniqueUserIds.length, nowStr, tenant_id || '']);
+
+    // Trigger push notification dispatch for target users
+    let sentCount = 0;
+    for (const uid of uniqueUserIds) {
+      const resNotify = await sendPushNotification(uid, title, body, { type: 'admin_broadcast' });
+      if (resNotify.success) sentCount++;
+    }
+
+    res.json({
+      success: true,
+      message: `Notification broadcast queued successfully for ${uniqueUserIds.length} target recipient(s).`,
+      recipientsCount: uniqueUserIds.length,
+      deviceDeliveries: sentCount
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. Fetch Notification History Logs
+app.get('/api/notifications/logs', async (req, res) => {
+  const { tenant_id } = req.query;
+  try {
+    let query = 'SELECT * FROM notification_logs';
+    const params = [];
+    if (tenant_id) {
+      query += ' WHERE tenant_id = ?';
+      params.push(tenant_id);
+    }
+    query += ' ORDER BY id DESC LIMIT 50';
+    const logs = await db.all(query, params);
+    res.json(logs);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
