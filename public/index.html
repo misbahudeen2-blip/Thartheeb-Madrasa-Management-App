@@ -416,6 +416,10 @@
         height: 0 !important;
       }
       html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+        position: relative;
         -webkit-overflow-scrolling: touch;
       }
 
@@ -2530,9 +2534,9 @@
             <!-- Batch Summaries (2 Cols) -->
             <div class="lg:col-span-2 space-y-6">
               <div class="bg-white rounded-2xl p-3.5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
-                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <h3 class="text-lg font-bold text-slate-800 font-cairo">Batch Attendance Summaries</h3>
-                  <div class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700" x-text="'Active Date: ' + (biometricDate || getTodayDateString())"></div>
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+                  <h3 class="text-base sm:text-lg font-bold text-slate-800 font-cairo">Batch Attendance Summaries</h3>
+                  <div class="text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700" x-text="'Active Date: ' + (biometricDate || getTodayDateString())"></div>
                 </div>
 
                 <div class="space-y-4">
@@ -2705,9 +2709,9 @@
                 <div class="block sm:hidden divide-y divide-slate-100">
                   <template x-for="row in attendanceLogs">
                     <div class="p-4 hover:bg-slate-50 transition">
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="font-bold text-sm text-slate-800" x-text="row.name"></div>
-                        <div class="inline-flex items-center gap-1">
+                      <div class="flex items-center justify-between mb-2 gap-2 min-w-0">
+                        <div class="font-bold text-sm text-slate-800 truncate min-w-0 flex-1" x-text="row.name"></div>
+                        <div class="inline-flex items-center gap-1 flex-shrink-0">
                           <span class="px-2 py-0.5 bg-slate-100 text-slate-800 font-bold rounded text-[10px] border border-slate-200" x-text="row.checkInTime ? formatTimeToAMPM(row.checkInTime) : '-'"></span>
                           <span :class="{
                             'bg-emerald-50 text-emerald-700 border-emerald-200': row.status === 'Present',
