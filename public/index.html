@@ -2462,55 +2462,63 @@
           </div>
 
           <!-- Compact Responsive Stats Cards Grid (2x2 on Mobile) -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <!-- Total Registered Card -->
-            <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md transition duration-200"
+            <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md transition duration-200 flex flex-col justify-between"
                  :class="{ 'ring-2 ring-slate-400 animate-counter-pulse scale-105 z-10': counterPulses.total }"
                  onclick="showAttendanceDetails('total')">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Total Registered</span>
-                <i class="fa-solid fa-users text-slate-300 text-xs sm:text-sm" :class="{ 'animate-bounce text-slate-600': counterPulses.total }"></i>
+                <div class="h-6 w-6 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center text-xs flex-shrink-0">
+                  <i class="fa-solid fa-users text-xs" :class="{ 'animate-bounce text-slate-600': counterPulses.total }"></i>
+                </div>
               </div>
-              <div class="text-xl sm:text-3xl font-black text-slate-800 mt-1 sm:mt-2 transition-all duration-300 inline-block"
+              <div class="text-2xl sm:text-3xl font-black text-slate-800 mt-2 transition-all duration-300 inline-block"
                    :class="{ 'animate-number-pop text-slate-900': counterPulses.total }"
                    x-text="biometricStats.total">0</div>
             </div>
 
             <!-- Present Today Card -->
-            <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md hover:border-emerald-100 transition duration-200"
+            <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md hover:border-emerald-100 transition duration-200 flex flex-col justify-between"
                  :class="{ 'ring-2 ring-emerald-500 animate-counter-pulse scale-105 z-10 bg-emerald-50/50': counterPulses.present }"
                  onclick="showAttendanceDetails('present')">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] sm:text-xs text-emerald-600 font-bold uppercase tracking-wider truncate">Present Today</span>
-                <i class="fa-solid fa-circle-check text-emerald-400 text-xs sm:text-sm" :class="{ 'animate-bounce text-emerald-600': counterPulses.present }"></i>
+                <div class="h-6 w-6 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center text-xs flex-shrink-0">
+                  <i class="fa-solid fa-circle-check text-xs" :class="{ 'animate-bounce text-emerald-600': counterPulses.present }"></i>
+                </div>
               </div>
-              <div class="text-xl sm:text-3xl font-black text-emerald-600 mt-1 sm:mt-2 transition-all duration-300 inline-block"
+              <div class="text-2xl sm:text-3xl font-black text-emerald-600 mt-2 transition-all duration-300 inline-block"
                    :class="{ 'animate-number-pop text-emerald-700': counterPulses.present }"
                    x-text="biometricStats.present">0</div>
             </div>
 
             <!-- Late Arrivals Card -->
-            <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md hover:border-amber-100 transition duration-200"
+            <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md hover:border-amber-100 transition duration-200 flex flex-col justify-between"
                  :class="{ 'ring-2 ring-amber-500 animate-counter-pulse scale-105 z-10 bg-amber-50/50': counterPulses.late }"
                  onclick="showAttendanceDetails('late')">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] sm:text-xs text-amber-600 font-bold uppercase tracking-wider truncate">Late Arrivals</span>
-                <i class="fa-solid fa-clock text-amber-400 text-xs sm:text-sm" :class="{ 'animate-bounce text-amber-600': counterPulses.late }"></i>
+                <div class="h-6 w-6 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center text-xs flex-shrink-0">
+                  <i class="fa-solid fa-clock text-xs" :class="{ 'animate-bounce text-amber-600': counterPulses.late }"></i>
+                </div>
               </div>
-              <div class="text-xl sm:text-3xl font-black text-amber-600 mt-1 sm:mt-2 transition-all duration-300 inline-block"
+              <div class="text-2xl sm:text-3xl font-black text-amber-600 mt-2 transition-all duration-300 inline-block"
                    :class="{ 'animate-number-pop text-amber-700': counterPulses.late }"
                    x-text="biometricStats.late">0</div>
             </div>
 
             <!-- Absent Today Card -->
-            <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md hover:border-rose-100 transition duration-200"
+            <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md hover:border-rose-100 transition duration-200 flex flex-col justify-between"
                  :class="{ 'ring-2 ring-rose-500 animate-counter-pulse scale-105 z-10 bg-rose-50/50': counterPulses.absent }"
                  onclick="showAttendanceDetails('absent')">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] sm:text-xs text-rose-600 font-bold uppercase tracking-wider truncate">Absent Today</span>
-                <i class="fa-solid fa-circle-xmark text-rose-400 text-xs sm:text-sm" :class="{ 'animate-bounce text-rose-600': counterPulses.absent }"></i>
+                <div class="h-6 w-6 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center text-xs flex-shrink-0">
+                  <i class="fa-solid fa-circle-xmark text-xs" :class="{ 'animate-bounce text-rose-600': counterPulses.absent }"></i>
+                </div>
               </div>
-              <div class="text-xl sm:text-3xl font-black text-rose-600 mt-1 sm:mt-2 transition-all duration-300 inline-block"
+              <div class="text-2xl sm:text-3xl font-black text-rose-600 mt-2 transition-all duration-300 inline-block"
                    :class="{ 'animate-number-pop text-rose-700': counterPulses.absent }"
                    x-text="biometricStats.absent">0</div>
             </div>
