@@ -546,10 +546,11 @@
       /* --- LANDING PAGE MOBILE --- */
       .hero-mobile-compact { padding-top: 2rem !important; padding-bottom: 2rem !important; }
 
-      /* --- FORM GRIDS ON MOBILE --- */
-      .grid-cols-2 { grid-template-columns: 1fr !important; }
-      .sm\\:grid-cols-2 { grid-template-columns: 1fr !important; }
-      .sm\\:grid-cols-3 { grid-template-columns: repeat(2, 1fr) !important; }
+      /* --- 2-COLUMN MOBILE GRID UTILITY --- */
+      .grid-2col-mobile {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
 
       /* --- MODAL INNER PADDING ON MOBILE --- */
       .modal-body-mobile {
@@ -2462,7 +2463,7 @@
           </div>
 
           <!-- Compact Responsive Stats Cards Grid (2x2 on Mobile) -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="grid grid-2col-mobile lg:grid-cols-4 gap-3 sm:gap-4">
             <!-- Total Registered Card -->
             <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-xs border border-slate-100 cursor-pointer transform hover:-translate-y-0.5 hover:shadow-md transition duration-200 flex flex-col justify-between"
                  :class="{ 'ring-2 ring-slate-400 animate-counter-pulse scale-105 z-10': counterPulses.total }"
