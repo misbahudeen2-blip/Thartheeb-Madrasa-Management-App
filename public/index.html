@@ -431,9 +431,13 @@
         padding: 0 !important;
         overflow-y: auto !important;
       }
-      .modal-fullscreen-mobile > div,
-      .modal-fullscreen-mobile > form {
+      .modal-fullscreen-mobile > div:only-child,
+      .modal-fullscreen-mobile > form:only-child {
         min-height: 100vh;
+      }
+      .modal-fullscreen-mobile > .mobile-modal-header {
+        min-height: auto !important;
+        flex-shrink: 0;
       }
 
       /* Legacy JS modals → full-screen */
