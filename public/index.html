@@ -405,6 +405,20 @@
     }
 
     @media (max-width: 640px) {
+      /* --- HIDE SCROLLBARS ON MOBILE --- */
+      *, *::before, *::after {
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important; /* IE/Edge */
+      }
+      *::-webkit-scrollbar {
+        display: none !important; /* Chrome, Safari, Opera */
+        width: 0 !important;
+        height: 0 !important;
+      }
+      html, body {
+        -webkit-overflow-scrolling: touch;
+      }
+
       /* --- MODAL FULL-SCREEN CONVERSION --- */
       /* All Alpine modals → full-screen on mobile */
       .modal-fullscreen-mobile {
