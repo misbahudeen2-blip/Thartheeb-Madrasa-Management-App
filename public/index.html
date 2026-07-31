@@ -1052,7 +1052,7 @@
     </div>
 
     <!-- MAIN DASHBOARD VIEW (ADMIN / TEACHER PORTAL) -->
-    <div x-show="currentView === 'dashboard'" class="flex-grow flex flex-col lg:flex-row" x-transition.fade>
+    <div x-show="currentView === 'dashboard'" class="flex-grow flex flex-col lg:flex-row overflow-x-hidden max-w-full" x-transition.fade>
       <!-- Sidebar Menu -->
       <aside x-show="sidebarOpen" :class="sidebarOpen ? 'lg:flex' : 'lg:hidden'" class="hidden w-full lg:w-64 bg-slate-900 text-slate-400 flex-col border-r border-slate-800 shrink-0 transition-all duration-300 ease-in-out">
         <!-- Logo and Active tenant in sidebar -->
@@ -1158,7 +1158,7 @@
       </aside>
 
       <!-- Main Dashboard Content Panel -->
-      <section class="bg-slate-50 text-slate-800 flex-grow p-3 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden w-full max-w-full max-h-[calc(100vh-65px)] relative pb-20 lg:pb-8">
+      <section class="bg-slate-50 text-slate-800 flex-grow p-3 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden w-full max-w-full min-w-0 max-h-[calc(100vh-65px)] relative pb-20 lg:pb-8">
 
         <!-- Sidebar Toggle Menu Button for Desktop -->
         <div class="hidden lg:flex items-center mb-6" x-show="!sidebarOpen">
@@ -2451,7 +2451,7 @@
             </div>
           </div>
 
-          <div x-show="!isBiometricLocked()" class="space-y-6">
+          <div x-show="!isBiometricLocked()" class="space-y-6 overflow-x-hidden w-full max-w-full">
           <div>
             <h2 class="text-lg sm:text-2xl font-bold font-cairo text-slate-800">Biometric Ingestion Portal</h2>
             <p class="text-xs text-slate-500">Real-time biometric device monitoring, statistics counters, and shifts configuration.</p>
@@ -2529,11 +2529,11 @@
             </div>
           </div>
 
-          <!-- Device Status & Batch Summaries -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Device Status & Batch Summaries (overflow-contained) -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 overflow-hidden max-w-full">
             <!-- Batch Summaries (2 Cols) -->
-            <div class="lg:col-span-2 space-y-6">
-              <div class="bg-white rounded-2xl p-3.5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
+            <div class="lg:col-span-2 space-y-6 min-w-0 overflow-hidden">
+              <div class="bg-white rounded-2xl p-3.5 sm:p-6 shadow-sm border border-slate-100 space-y-4 overflow-hidden">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
                   <h3 class="text-base sm:text-lg font-bold text-slate-800 font-cairo">Batch Attendance Summaries</h3>
                   <div class="text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700" x-text="'Active Date: ' + (biometricDate || getTodayDateString())"></div>
@@ -2548,10 +2548,10 @@
                         const hour = parseInt((x.startTime || '00:00').split(':')[0]);
                         return hour < 12;
                       })">
-                        <div @click="openBatchDetailsModal(b.batchId)" class="bg-slate-50 border border-slate-100 rounded-xl p-4 cursor-pointer hover:bg-slate-100/50 hover:border-emerald-100 transition">
-                          <div class="flex items-center justify-between">
-                            <span class="font-bold text-slate-800 font-cairo" x-text="b.batchName"></span>
-                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200/50 text-slate-600" x-text="b.startTime + ' - ' + b.endTime"></span>
+                        <div @click="openBatchDetailsModal(b.batchId)" class="bg-slate-50 border border-slate-100 rounded-xl p-3 sm:p-4 cursor-pointer hover:bg-slate-100/50 hover:border-emerald-100 transition overflow-hidden">
+                          <div class="flex items-center justify-between gap-2 min-w-0">
+                            <span class="font-bold text-slate-800 font-cairo truncate min-w-0 flex-1 text-sm" x-text="b.batchName"></span>
+                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200/50 text-slate-600 flex-shrink-0 whitespace-nowrap" x-text="b.startTime + ' - ' + b.endTime"></span>
                           </div>
                           <div class="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
                             <div class="bg-emerald-50 text-emerald-700 p-2 rounded-lg font-bold">
@@ -2592,10 +2592,10 @@
                         const hour = parseInt((x.startTime || '00:00').split(':')[0]);
                         return hour >= 12;
                       })">
-                        <div @click="openBatchDetailsModal(b.batchId)" class="bg-slate-50 border border-slate-100 rounded-xl p-4 cursor-pointer hover:bg-slate-100/50 hover:border-emerald-100 transition">
-                          <div class="flex items-center justify-between">
-                            <span class="font-bold text-slate-800 font-cairo" x-text="b.batchName"></span>
-                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200/50 text-slate-600" x-text="b.startTime + ' - ' + b.endTime"></span>
+                        <div @click="openBatchDetailsModal(b.batchId)" class="bg-slate-50 border border-slate-100 rounded-xl p-3 sm:p-4 cursor-pointer hover:bg-slate-100/50 hover:border-emerald-100 transition overflow-hidden">
+                          <div class="flex items-center justify-between gap-2 min-w-0">
+                            <span class="font-bold text-slate-800 font-cairo truncate min-w-0 flex-1 text-sm" x-text="b.batchName"></span>
+                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200/50 text-slate-600 flex-shrink-0 whitespace-nowrap" x-text="b.startTime + ' - ' + b.endTime"></span>
                           </div>
                           <div class="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
                             <div class="bg-emerald-50 text-emerald-700 p-2 rounded-lg font-bold">
@@ -2697,7 +2697,7 @@
               </div>
 
               <!-- Realtime Attendance log -->
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden max-w-full">
                 <div class="p-5 border-b border-slate-50 flex items-center justify-between flex-wrap gap-2">
                   <h3 class="text-lg font-bold text-slate-800 font-cairo">Live Punch Feeds</h3>
                   <div class="text-xs text-emerald-600 flex items-center space-x-1.5">
@@ -2785,19 +2785,19 @@
             </div>
 
             <!-- Active Biometric Devices (1 Col) -->
-            <div class="space-y-6">
-              <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+            <div class="space-y-6 min-w-0 overflow-hidden">
+              <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-100 space-y-4 overflow-hidden">
                 <h3 class="text-lg font-bold text-slate-800 font-cairo border-b border-slate-50 pb-2">Active Devices</h3>
                 <div class="space-y-3">
                   <template x-for="dev in devices">
                     <div class="border border-slate-100 rounded-xl p-3 space-y-1">
-                      <div class="flex items-center justify-between">
-                        <span class="font-bold text-slate-800 text-xs" x-text="dev.device_name || 'Biometric Machine'"></span>
-                        <span :class="dev.status === 'ONLINE' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'" class="text-[9px] font-black uppercase px-2 py-0.5 rounded border" x-text="dev.status"></span>
+                      <div class="flex items-center justify-between gap-2 min-w-0">
+                        <span class="font-bold text-slate-800 text-xs truncate min-w-0 flex-1" x-text="dev.device_name || 'Biometric Machine'"></span>
+                        <span :class="dev.status === 'ONLINE' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'" class="text-[9px] font-black uppercase px-2 py-0.5 rounded border flex-shrink-0" x-text="dev.status"></span>
                       </div>
-                      <div class="text-[10px] text-slate-400">SN: <code class="font-bold text-slate-650" x-text="dev.serial_number"></code></div>
-                      <div class="text-[10px] text-slate-400">IP: <span class="font-bold text-slate-650" x-text="dev.ip_address || '-'"></span></div>
-                      <div class="text-[10px] text-slate-400">Last Seen: <span class="font-semibold text-slate-500" x-text="dev.last_seen || 'Never'"></span></div>
+                      <div class="text-[10px] text-slate-400 truncate">SN: <code class="font-bold text-slate-650 break-all" x-text="dev.serial_number"></code></div>
+                      <div class="text-[10px] text-slate-400 truncate">IP: <span class="font-bold text-slate-650" x-text="dev.ip_address || '-'"></span></div>
+                      <div class="text-[10px] text-slate-400 truncate">Last Seen: <span class="font-semibold text-slate-500" x-text="dev.last_seen || 'Never'"></span></div>
                     </div>
                   </template>
                   <div x-show="devices.length === 0" class="text-xs text-slate-400 italic">No biometric devices connected.</div>
@@ -2805,8 +2805,8 @@
               </div>
 
               <!-- Device Operations (Sync / Setup) -->
-              <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
-                <h3 class="text-lg font-bold text-slate-800 font-cairo border-b border-slate-50 pb-2">Sync Controls</h3>
+              <div class="bg-white rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-100 space-y-4 overflow-hidden">
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 font-cairo border-b border-slate-50 pb-2">Sync Controls</h3>
                 <div class="space-y-4">
                   <template x-for="dev in devices" :key="dev.serial_number">
                     <div class="space-y-3 p-3 bg-slate-50 border border-slate-100 rounded-2xl">
