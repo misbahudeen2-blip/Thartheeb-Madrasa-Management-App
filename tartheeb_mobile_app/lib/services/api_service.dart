@@ -43,7 +43,7 @@ class ApiService {
         await _saveSession(data);
         return {'success': true, ...data};
       }
-      return {'success': false, 'message': data['message'] ?? 'Login failed'};
+      return {'success': false, 'message': data['error'] ?? data['message'] ?? 'Login failed'};
     } catch (e) {
       return {'success': false, 'message': _handleError(e)};
     }
@@ -58,7 +58,7 @@ class ApiService {
         body: jsonEncode({
           'role': role,
           'institution_code': institutionCode,
-          'user_id': userId,
+          'username': userId,
           'password': password,
         }),
       ).timeout(timeoutDuration);
@@ -68,7 +68,7 @@ class ApiService {
         await _saveSession(data);
         return {'success': true, ...data};
       }
-      return {'success': false, 'message': data['message'] ?? 'Login failed'};
+      return {'success': false, 'message': data['error'] ?? data['message'] ?? 'Login failed'};
     } catch (e) {
       return {'success': false, 'message': _handleError(e)};
     }
@@ -96,7 +96,7 @@ class ApiService {
           'syllabus': syllabus,
           'admin_name': adminName,
           'phone': phone,
-          'email': email,
+          'username': email,
           'password': password,
           'place': place,
           'landmark': landmark,
@@ -110,7 +110,7 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {'success': true, ...data};
       }
-      return {'success': false, 'message': data['message'] ?? 'Registration failed'};
+      return {'success': false, 'message': data['error'] ?? data['message'] ?? 'Registration failed'};
     } catch (e) {
       return {'success': false, 'message': _handleError(e)};
     }
@@ -119,13 +119,21 @@ class ApiService {
   // --- Session Management ---
   static Future<void> _saveSession(Map<String, dynamic> data) async {
     final prefs = await SharedPreferences.getInstance();
+
+    final member = data['member'] is Map ? data['member'] as Map : {};
+    final tenantId = data['tenant_id'] ?? member['tenant_id'] ?? data['username'] ?? '';
+    final username = data['username'] ?? member['name'] ?? member['user_id'] ?? '';
+    final madrasaName = data['madrasa_name'] ?? member['madrasa_name'] ?? 'My Madrasa';
+    final role = data['role'] ?? member['role'] ?? 'admin';
+
     if (data['token'] != null) await prefs.setString('auth_token', data['token'].toString());
-    if (data['tenant_id'] != null) await prefs.setString('tenant_id', data['tenant_id'].toString());
-    if (data['username'] != null) await prefs.setString('username', data['username'].toString());
-    if (data['madrasa_name'] != null) await prefs.setString('madrasa_name', data['madrasa_name'].toString());
-    if (data['role'] != null) await prefs.setString('role', data['role'].toString());
-    if (data['institution_code'] != null) await prefs.setString('institution_code', data['institution_code'].toString());
-    if (data['permissions'] != null) await prefs.setString('permissions', jsonEncode(data['permissions']));
+    await prefs.setString('tenant_id', tenantId.toString());
+    await prefs.setString('username', username.toString());
+    await prefs.setString('madrasa_name', madrasaName.toString());
+    await prefs.setString('role', role.toString());
+    if (data['institution_code'] != null) {
+      await prefs.setString('institution_code', data['institution_code'].toString());
+    }
   }
 
   static Future<Map<String, String>> getSession() async {
@@ -192,21 +200,45 @@ class ApiService {
   }
 
   // --- Students ---
-  static Future<dynamic> getStudents(String tenantId) => _get('/students?tenant_id=$tenantId');
+  static Future<dynamic> getStudents(String tenantId) async {
+    final res = await _get('/students?tenant_id=$tenantId');
+    if (res is Map && res.containsKey('data')) {
+      return res['data'];
+    }
+    return res;
+  }
+
   static Future<dynamic> createStudent(String tenantId, Map<String, dynamic> data) =>
       _post('/students', {...data, 'tenant_id': tenantId});
+
   static Future<dynamic> deleteStudent(String tenantId, String id) => _delete('/students/$id');
 
   // --- Teachers ---
-  static Future<dynamic> getTeachers(String tenantId) => _get('/teachers?tenant_id=$tenantId');
+  static Future<dynamic> getTeachers(String tenantId) async {
+    final res = await _get('/teachers?tenant_id=$tenantId');
+    if (res is Map && res.containsKey('data')) {
+      return res['data'];
+    }
+    return res;
+  }
+
   static Future<dynamic> createTeacher(String tenantId, Map<String, dynamic> data) =>
       _post('/teachers', {...data, 'tenant_id': tenantId});
+
   static Future<dynamic> deleteTeacher(String tenantId, String id) => _delete('/teachers/$id');
 
   // --- Batches ---
-  static Future<dynamic> getBatches(String tenantId) => _get('/batches?tenant_id=$tenantId');
+  static Future<dynamic> getBatches(String tenantId) async {
+    final res = await _get('/batches?tenant_id=$tenantId');
+    if (res is Map && res.containsKey('data')) {
+      return res['data'];
+    }
+    return res;
+  }
+
   static Future<dynamic> createBatch(String tenantId, Map<String, dynamic> data) =>
       _post('/batches', {...data, 'tenant_id': tenantId});
+
   static Future<dynamic> deleteBatch(String tenantId, String id) => _delete('/batches/$id');
 
   // --- Shifts ---
@@ -215,8 +247,9 @@ class ApiService {
   // --- Attendance ---
   static Future<dynamic> getAttendance(String tenantId, String date) =>
       _get('/attendance?tenant_id=$tenantId&date=$date');
+
   static Future<dynamic> submitManualAttendance(
-      String tenantId, String date, String batchId, List<Map<String, dynamic>> records) =>
+          String tenantId, String date, String batchId, List<Map<String, dynamic>> records) =>
       _post('/attendance/manual', {
         'tenant_id': tenantId,
         'date': date,
@@ -234,6 +267,7 @@ class ApiService {
   // --- Notifications ---
   static Future<dynamic> registerToken(String token) =>
       _post('/notifications/register-token', {'token': token});
+
   static Future<dynamic> sendBroadcast(Map<String, dynamic> data) =>
       _post('/notifications/send-broadcast', data);
 }
