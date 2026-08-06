@@ -7,9 +7,9 @@ import '../../services/api_service.dart';
 
 class OverviewTab extends StatefulWidget {
   final String tenantId;
-  final String username;
+  final String displayName;
 
-  const OverviewTab({super.key, required this.tenantId, required this.username});
+  const OverviewTab({super.key, required this.tenantId, required this.displayName});
 
   @override
   State<OverviewTab> createState() => _OverviewTabState();
@@ -64,7 +64,7 @@ class _OverviewTabState extends State<OverviewTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Greeting
+            // Greeting Banner
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -95,7 +95,7 @@ class _OverviewTabState extends State<OverviewTab> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    widget.username,
+                    widget.displayName,
                     style: GoogleFonts.cairo(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -327,44 +327,39 @@ class _OverviewTabState extends State<OverviewTab> {
   }
 
   Widget _buildQuickAction(String label, IconData icon, Color color) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to respective tab via DashboardScreen
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(14),
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.slate900,
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.slate900,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

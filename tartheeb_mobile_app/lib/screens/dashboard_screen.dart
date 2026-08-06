@@ -44,13 +44,17 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final displayName = (_role == 'admin' || _role == 'superadmin')
+        ? _madrasaName
+        : (_username.isNotEmpty ? _username : _madrasaName);
+
     final tabs = [
-      OverviewTab(tenantId: _tenantId, username: _username),
+      OverviewTab(tenantId: _tenantId, displayName: displayName),
       StudentsTab(tenantId: _tenantId),
       BiometricTab(tenantId: _tenantId),
       MoreTab(
         tenantId: _tenantId,
-        username: _username,
+        username: displayName,
         role: _role,
         onSwitchTab: switchTab,
       ),
@@ -89,9 +93,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: AppTheme.slate900),
-            onPressed: () {
-              // TODO: Notification center
-            },
+            onPressed: () {},
           ),
         ],
       ),
