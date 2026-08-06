@@ -8,7 +8,7 @@
 PRODUCT_NAME = tartheeb_mobile_app
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.tartheeb.app.tartheebMobileApp
+PRODUCT_BUNDLE_IDENTIFIER = com.tartheeb.tartheebMobileApp
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.tartheeb.app. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.tartheeb. All rights reserved.

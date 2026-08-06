@@ -2,43 +2,62 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _localNotifications =
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
     if (kIsWeb) return;
-    const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initSettings =
-        InitializationSettings(android: androidSettings);
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initSettings = InitializationSettings(android: androidSettings);
 
-    await _localNotifications.initialize(initSettings);
+    await _notificationsPlugin.initialize(
+      settings: initSettings,
+      onDidReceiveNotificationResponse: (details) {
+        debugPrint('Notification tapped: ${details.payload}');
+      },
+    );
+
+    const androidChannel = AndroidNotificationChannel(
+      'tartheeb_high_importance_channel',
+      'Tartheeb Alerts',
+      description: 'High importance notifications for Tartheeb Madrasa App',
+      importance: Importance.high,
+    );
+
+    final androidImplementation = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidImplementation != null) {
+      await androidImplementation.createNotificationChannel(androidChannel);
+    }
   }
 
-  /// Show native top banner notification
   static Future<void> showNotification({
+    int id = 0,
     required String title,
     required String body,
+    String? payload,
   }) async {
     if (kIsWeb) return;
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'tartheeb_channel_id',
-      'Tartheeb Attendance Alerts',
-      channelDescription: 'Real-time notifications for attendance and device events',
-      importance: Importance.max,
+
+    const androidDetails = AndroidNotificationDetails(
+      'tartheeb_high_importance_channel',
+      'Tartheeb Alerts',
+      channelDescription: 'High importance notifications for Tartheeb Madrasa App',
+      importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
     );
 
-    const NotificationDetails platformDetails =
-        NotificationDetails(android: androidDetails);
+    const details = NotificationDetails(android: androidDetails);
 
-    await _localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title,
-      body,
-      platformDetails,
+    await _notificationsPlugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: details,
+      payload: payload,
     );
   }
 }

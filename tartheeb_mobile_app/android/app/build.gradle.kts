@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.tartheeb.app.tartheeb_mobile_app"
+    namespace = "com.tartheeb.tartheeb_mobile_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,11 +16,12 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.tartheeb.app.tartheeb_mobile_app"
+        applicationId = "com.tartheeb.tartheeb_mobile_app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -36,10 +37,10 @@ kotlin {
     }
 }
 
-dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-}
-
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

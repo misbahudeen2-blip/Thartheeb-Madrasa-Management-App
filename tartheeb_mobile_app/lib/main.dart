@@ -1,34 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'services/api_service.dart';
-import 'screens/login_screen.dart';
-import 'screens/dashboard_screen.dart';
+import 'package:flutter/services.dart';
+import 'theme/app_theme.dart';
+import 'services/notification_service.dart';
+import 'services/permission_service.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Check saved session
-  final session = await ApiService.getSession();
-  final isLoggedIn = session['tenant_id'] != null;
+  // Set system UI overlay style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
 
-  runApp(TartheebApp(isLoggedIn: isLoggedIn));
+  // Initialize Notification Service (Web-safe)
+  try {
+    await NotificationService.initialize();
+  } catch (e) {
+    debugPrint('NotificationService init error: $e');
+  }
+
+  // Request permissions in background after frame render (prevents black screen)
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    PermissionService.requestAllPermissions();
+  });
+
+  runApp(const TartheebApp());
 }
 
 class TartheebApp extends StatelessWidget {
-  final bool isLoggedIn;
-  const TartheebApp({Key? key, required this.isLoggedIn}) : super(key: key);
+  const TartheebApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tartheeb Madrasa App',
+      title: 'Tartheeb Madrasa',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: isLoggedIn ? const DashboardScreen() : const LoginScreen(),
+      theme: AppTheme.theme,
+      home: const SplashScreen(),
     );
   }
 }

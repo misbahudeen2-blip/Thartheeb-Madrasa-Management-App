@@ -1,197 +1,286 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import 'register_screen.dart';
 import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'qubamadrasaoffice@gmail.com');
+  int _selectedRoleIndex = 0; // 0: Admin, 1: Teacher, 2: Parent
+  final List<String> _roles = ['Admin', 'Teacher', 'Parent'];
+
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _institutionCodeController = TextEditingController();
+  final _userIdController = TextEditingController();
+
+  bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
 
-  void _handleLogin() async {
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _institutionCodeController.dispose();
+    _userIdController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    final res = await ApiService.login(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (res['success'] == true) {
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
-    } else {
+    try {
+      dynamic result;
+      if (_selectedRoleIndex == 0) {
+        result = await ApiService.login(_emailController.text, _passwordController.text);
+      } else {
+        result = await ApiService.memberLogin(
+          _roles[_selectedRoleIndex].toLowerCase(),
+          _institutionCodeController.text,
+          _userIdController.text,
+          _passwordController.text,
+        );
+      }
+      
+      if (result != null) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      } else {
+        setState(() {
+          _errorMessage = "Login failed. Please check your credentials.";
+        });
+      }
+    } catch (e) {
       setState(() {
-        _errorMessage = res['message'] ?? 'Login failed. Please check credentials.';
+        _errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, {bool isPassword = false, IconData? prefixIcon}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword && _obscurePassword,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppTheme.emerald500) : null,
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppTheme.emerald500),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.background,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // App Logo Header
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(24),
+                const SizedBox(height: 40),
+                Image.asset('assets/images/thartheeb-logo.png', width: 64, height: 64),
+                const SizedBox(height: 16),
+                Text(
+                  'Tartheeb',
+                  style: GoogleFonts.philosopher(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.slate900,
                   ),
+                ),
+                Text(
+                  'Madrasa Management App',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 40),
+                
+                // Card for Login
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      const Icon(
-                        Icons.school_rounded,
-                        size: 48,
-                        color: Color(0xFF10B981),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Tartheeb',
-                        style: GoogleFonts.cairo(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      // Role Tabs
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        child: Row(
+                          children: List.generate(_roles.length, (index) {
+                            final isSelected = _selectedRoleIndex == index;
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedRoleIndex = index;
+                                    _errorMessage = null;
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? AppTheme.emerald500 : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    _roles[index],
+                                    style: GoogleFonts.inter(
+                                      color: isSelected ? Colors.white : Colors.grey.shade600,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
                         ),
                       ),
-                      Text(
-                        'MADRASA MANAGEMENT APP',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2,
-                          color: const Color(0xFF94A3B8),
+                      const SizedBox(height: 24),
+
+                      // Error message
+                      if (_errorMessage != null)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _errorMessage!,
+                                  style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      // Form Fields
+                      if (_selectedRoleIndex == 0) ...[
+                        _buildTextField(_emailController, 'Email', prefixIcon: Icons.email_outlined),
+                        _buildTextField(_passwordController, 'Password', isPassword: true, prefixIcon: Icons.lock_outline),
+                      ] else ...[
+                        _buildTextField(_institutionCodeController, 'Institution Code', prefixIcon: Icons.domain),
+                        _buildTextField(_userIdController, _selectedRoleIndex == 1 ? 'Teacher ID' : 'Student ID', prefixIcon: Icons.person_outline),
+                        _buildTextField(_passwordController, 'Password', isPassword: true, prefixIcon: Icons.lock_outline),
+                      ],
+
+                      const SizedBox(height: 8),
+
+                      // Login Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.emerald500,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : Text(
+                                  'Login to Dashboard',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
-
-                Text(
-                  'Sign In to Portal',
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Enter your registered email and password',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: const Color(0xFF64748B),
-                  ),
-                ),
+                
                 const SizedBox(height: 24),
-
-                if (_errorMessage != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFCA5A5)),
-                    ),
-                    child: Text(
-                      _errorMessage!,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: const Color(0xFFDC2626),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                // Email Input
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Username / Email',
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Password Input
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Login Button
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF059669),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          'Login to Dashboard',
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
-                const SizedBox(height: 20),
-
-                // Server Settings Config Button
-                TextButton.icon(
-                  onPressed: _showServerConfigDialog,
-                  icon: const Icon(Icons.dns_rounded, size: 18, color: Color(0xFF64748B)),
-                  label: Text(
-                    'Configure Server IP / URL',
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                    );
+                  },
+                  child: Text(
+                    "Don't have an account? Register here",
                     style: GoogleFonts.inter(
-                      fontSize: 13,
+                      color: AppTheme.emerald500,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF64748B),
                     ),
                   ),
                 ),
@@ -202,62 +291,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  void _showServerConfigDialog() async {
-    final currentUrl = await ApiService.getBaseUrl();
-    final urlController = TextEditingController(text: currentUrl);
-
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Server Configuration',
-          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Enter your Push Server Base URL or local IP address:',
-              style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: urlController,
-              decoration: InputDecoration(
-                labelText: 'Server URL',
-                hintText: 'http://13.233.246.171:3000',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF059669)),
-            onPressed: () async {
-              await ApiService.setBaseUrl(urlController.text);
-              if (!mounted) return;
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Server URL updated successfully!'),
-                  backgroundColor: Color(0xFF059669),
-                ),
-              );
-            },
-            child: const Text('Save', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
 }
