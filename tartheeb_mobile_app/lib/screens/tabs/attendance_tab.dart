@@ -259,6 +259,50 @@ class _AttendanceTabState extends State<AttendanceTab> {
             ),
           ),
 
+          // Bulk Action Header (Mark All Present / Late / Absent / Holiday)
+          if (_students.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.bolt, size: 16, color: AppTheme.emerald700),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Bulk Action (Entire Batch):',
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.slate900),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildBulkButton('All Present', const Color(0xFF10b981), () => _markAllStatus('present')),
+                          const SizedBox(width: 6),
+                          _buildBulkButton('All Late', const Color(0xFFf59e0b), () => _markAllStatus('late')),
+                          const SizedBox(width: 6),
+                          _buildBulkButton('All Absent', const Color(0xFFef4444), () => _markAllStatus('absent')),
+                          const SizedBox(width: 6),
+                          _buildBulkButton('All Holiday', const Color(0xFF3b82f6), () => _markAllStatus('holiday')),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // Status Filter Tabs (Present / Absent / Holiday)
           if (_students.isNotEmpty)
             Padding(
@@ -420,6 +464,40 @@ class _AttendanceTabState extends State<AttendanceTab> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  void _markAllStatus(String status) {
+    setState(() {
+      for (var student in _students) {
+        final uid = (student['user_id'] ?? student['id'])?.toString() ?? '';
+        if (uid.isNotEmpty) {
+          _attendanceStatus[uid] = status;
+        }
+      }
+    });
+  }
+
+  Widget _buildBulkButton(String label, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
       ),
     );
   }

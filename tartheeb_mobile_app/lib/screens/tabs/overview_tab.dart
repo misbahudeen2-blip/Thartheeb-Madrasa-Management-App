@@ -49,15 +49,30 @@ class _OverviewTabState extends State<OverviewTab> {
     }
     setState(() => _isLoading = true);
     try {
+      final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final students = await ApiService.getStudents(widget.tenantId);
       final batches = await ApiService.getBatches(widget.tenantId);
       final teachers = await ApiService.getTeachers(widget.tenantId);
+      final attData = await ApiService.getAttendance(widget.tenantId, todayStr);
 
       if (mounted) {
+        int present = 0;
+        int lateCount = 0;
+        int absent = 0;
+
+        if (attData is Map) {
+          present = attData['presentCount'] ?? 0;
+          lateCount = attData['lateCount'] ?? 0;
+          absent = attData['absentCount'] ?? 0;
+        }
+
         setState(() {
           _totalStudents = (students is List) ? students.length : 0;
           _totalBatches = (batches is List) ? batches.length : 0;
           _totalTeachers = (teachers is List) ? teachers.length : 0;
+          _presentToday = present;
+          _lateToday = lateCount;
+          _absentToday = absent;
           _isLoading = false;
         });
       }
