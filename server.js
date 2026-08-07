@@ -1535,10 +1535,11 @@ app.get('/api/attendance', async (req, res) => {
         hasFingerprint: student.fp_count > 0,
         batchName: student.batch_name || 'N/A',
         teacherName: student.teacher_name || 'None',
-        checkInTime: log ? log.check_in.split(' ')[1] : '-',
+        checkInTime: log && log.check_in ? log.check_in.split(' ')[1] : '-',
         lateMinutes: log ? log.late_minutes : 0,
         status: log ? log.attendance_status : 'Absent',
-        remarks: log ? log.remarks : 'No punch recorded'
+        remarks: log ? log.remarks : 'No punch recorded',
+        entryMode: log ? (log.remarks === 'Manual Entry' ? 'manual' : (log.check_in ? 'biometric' : 'none')) : 'none'
       };
     });
 
@@ -1621,7 +1622,8 @@ app.get('/api/attendance', async (req, res) => {
           cardNumber: s.cardNumber,
           checkInTime: s.checkInTime,
           status: s.status,
-          lateMinutes: s.lateMinutes
+          lateMinutes: s.lateMinutes,
+          entryMode: s.entryMode
         })),
         teachers: teachersForBatch.map(t => ({
           userId: t.user_id,
@@ -1709,10 +1711,16 @@ app.get('/api/attendance', async (req, res) => {
 
     const teacherRecords = teacherBatchRows;
 
+    const presentList = report.filter(r => r.status === 'Present' || r.status === 'Late' || r.status === 'Early');
+    const biometricCount = presentList.filter(r => r.entryMode === 'biometric').length;
+    const manualCount = presentList.filter(r => r.entryMode === 'manual').length;
+
     res.json({
       date: targetDate,
       totalStudents: students.length,
-      presentCount: report.filter(r => r.status === 'Present' || r.status === 'Late' || r.status === 'Early').length,
+      presentCount: presentList.length,
+      biometricCount,
+      manualCount,
       absentCount: report.filter(r => r.status === 'Absent').length,
       lateCount: report.filter(r => r.status === 'Late').length,
       records: report,
