@@ -1745,13 +1745,15 @@ app.post('/api/attendance/manual', async (req, res) => {
       const { user_id, status } = rec;
       if (!user_id || !status) continue;
 
+      const normStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+
       let checkIn = null;
       let checkOut = null;
 
-      if (status === 'Present') {
+      if (normStatus === 'Present') {
         checkIn = `${date} 09:00:00`;
         checkOut = `${date} 10:30:00`;
-      } else if (status === 'Late') {
+      } else if (normStatus === 'Late') {
         checkIn = `${date} 09:15:00`;
         checkOut = `${date} 10:30:00`;
       }
@@ -1764,7 +1766,7 @@ app.post('/api/attendance/manual', async (req, res) => {
           check_out = excluded.check_out,
           attendance_status = excluded.attendance_status,
           remarks = excluded.remarks
-      `, [user_id, date, checkIn, checkOut, status, batch_id]);
+      `, [user_id, date, checkIn, checkOut, normStatus, batch_id]);
     }
 
     await db.run('COMMIT');

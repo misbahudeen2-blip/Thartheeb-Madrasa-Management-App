@@ -57,20 +57,38 @@ class _AttendanceTabState extends State<AttendanceTab> {
     setState(() => _isLoading = true);
     try {
       final data = await ApiService.getStudents(widget.tenantId);
+      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      dynamic attData;
+      try {
+        attData = await ApiService.getAttendance(widget.tenantId, dateStr);
+      } catch (_) {}
+
+      final serverRecords = (attData is Map ? attData['records'] : []) as List? ?? [];
+
       if (mounted) {
         final students = (data is List ? data : [])
             .where((s) => s['batch_id']?.toString() == _selectedBatch)
             .toList();
         
-        setState(() {
-          _students = students;
-          _attendanceStatus = {};
-          for (var s in students) {
-            final uid = (s['user_id'] ?? s['id'])?.toString() ?? '';
-            if (uid.isNotEmpty) {
-              _attendanceStatus[uid] = 'absent'; // Web default is absent
+        final Map<String, String> statusMap = {};
+        for (var s in students) {
+          final uid = (s['user_id'] ?? s['id'])?.toString() ?? '';
+          if (uid.isNotEmpty) {
+            final existing = serverRecords.firstWhere(
+              (r) => r['userId']?.toString() == uid,
+              orElse: () => null,
+            );
+            if (existing != null && existing['status'] != null) {
+              statusMap[uid] = existing['status'].toString().toLowerCase();
+            } else {
+              statusMap[uid] = 'absent';
             }
           }
+        }
+        
+        setState(() {
+          _students = students;
+          _attendanceStatus = statusMap;
           _isLoading = false;
         });
       }
@@ -82,9 +100,15 @@ class _AttendanceTabState extends State<AttendanceTab> {
   Future<void> _submitAttendance() async {
     setState(() => _isSubmitting = true);
     try {
-      final records = _attendanceStatus.entries.map((e) => {
-        'user_id': e.key,
-        'status': e.value,
+      final records = _attendanceStatus.entries.map((e) {
+        final rawStatus = e.value;
+        final formattedStatus = rawStatus.isNotEmpty
+            ? rawStatus[0].toUpperCase() + rawStatus.substring(1)
+            : 'Absent';
+        return {
+          'user_id': e.key,
+          'status': formattedStatus,
+        };
       }).toList();
 
       await ApiService.submitManualAttendance(

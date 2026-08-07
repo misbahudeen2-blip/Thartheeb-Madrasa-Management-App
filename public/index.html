@@ -8871,19 +8871,38 @@
         },
 
         // Mobile Attendance marking
-        loadMobileAttendanceStudents() {
+        async loadMobileAttendanceStudents() {
           if (!this.mobileAttendanceBatchId) return;
           const students = this.getTenantStudents().filter(s => s.batchId === this.mobileAttendanceBatchId);
           const data = {};
-          students.forEach(s => {
-            const log = JSON.parse(localStorage.getItem('quba_attendance') || '[]');
-            const existing = log.find(a => a.studentId === s.id && a.date === this.getTodayDateString());
-            data[s.id] = existing ? existing.status : 'Present';
-          });
+          const todayStr = this.getTodayDateString();
+
+          try {
+            const res = await fetch(`/api/attendance?date=${todayStr}&tenant_id=${this.currentTenant.id}`);
+            const serverData = await res.json();
+            const serverRecords = serverData.records || [];
+            
+            students.forEach(s => {
+              const serverMatch = serverRecords.find(r => r.userId === s.id);
+              if (serverMatch && serverMatch.status) {
+                data[s.id] = serverMatch.status;
+              } else {
+                const log = JSON.parse(localStorage.getItem('quba_attendance') || '[]');
+                const existing = log.find(a => a.studentId === s.id && a.date === todayStr);
+                data[s.id] = existing ? existing.status : 'Present';
+              }
+            });
+          } catch(e) {
+            students.forEach(s => {
+              const log = JSON.parse(localStorage.getItem('quba_attendance') || '[]');
+              const existing = log.find(a => a.studentId === s.id && a.date === todayStr);
+              data[s.id] = existing ? existing.status : 'Present';
+            });
+          }
           this.mobileAttendanceData = data;
         },
 
-        submitMobileAttendance() {
+        async submitMobileAttendance() {
           if (!this.mobileAttendanceBatchId) return;
           const students = this.getTenantStudents().filter(s => s.batchId === this.mobileAttendanceBatchId);
           const attendanceLog = JSON.parse(localStorage.getItem('quba_attendance') || '[]');
@@ -8912,7 +8931,33 @@
 
           localStorage.setItem('quba_attendance', JSON.stringify(attendanceLog));
           this.studentsVersion++;
-          this.showToast(this.lang === 'ml' ? 'ഹാജർ നില വിജയകരമായി രേഖപ്പെടുത്തി!' : 'Attendance saved successfully!');
+
+          // Synchronize with server backend API
+          try {
+            const payload = {
+              date: todayStr,
+              batch_id: this.mobileAttendanceBatchId,
+              records: students.map(s => ({
+                user_id: s.id,
+                status: this.mobileAttendanceData[s.id] || 'Present'
+              }))
+            };
+
+            const res = await fetch('/api/attendance/manual', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              this.showToast(this.lang === 'ml' ? 'ഹാജർ നില വിജയകരമായി സേവ് ചെയ്തു!' : 'Attendance saved successfully!');
+              await this.loadAllDataFromServer();
+            } else {
+              this.showToast(data.error || 'Failed to save server attendance', 'error');
+            }
+          } catch(e) {
+            this.showToast('Saved locally, but network error syncing to server.', 'warning');
+          }
           
           if (this.currentView === 'dashboard' && this.dashTab === 'overview') {
             this.renderDashboardCharts();
