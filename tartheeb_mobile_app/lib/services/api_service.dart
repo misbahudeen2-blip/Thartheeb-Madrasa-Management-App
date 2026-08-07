@@ -259,6 +259,14 @@ class ApiService {
 
   // --- Devices ---
   static Future<dynamic> getDevices(String tenantId) => _get('/devices?tenant_id=$tenantId');
+  static Future<dynamic> registerDevice(String tenantId, String serialNumber, String deviceName) =>
+      _post('/devices', {
+        'tenant_id': tenantId,
+        'serial_number': serialNumber,
+        'device_name': deviceName,
+      });
+  static Future<dynamic> deleteDevice(String serialNumber) =>
+      _delete('/devices/$serialNumber');
 
   // --- Reports ---
   static Future<dynamic> getDashboardCandlestick(String tenantId) =>

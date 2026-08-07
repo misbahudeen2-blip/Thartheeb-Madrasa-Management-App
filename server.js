@@ -1419,16 +1419,37 @@ app.post('/api/devices', async (req, res) => {
   if (!serial_number) {
     return res.status(400).json({ error: 'Missing Device Serial Number.' });
   }
+  const cleanSN = serial_number.trim();
+  const clientIp = req.ip || req.socket.remoteAddress;
+
   try {
+    // Security check: Verify if serial_number is already registered under another tenant_id
+    const existingDev = await db.get('SELECT * FROM devices WHERE serial_number = ?', [cleanSN]);
+    if (existingDev && existingDev.tenant_id && tenant_id && existingDev.tenant_id !== tenant_id) {
+      return res.status(403).json({
+        error: 'Security Alert: This device Serial Number is already claimed and locked by another Madrasa account!'
+      });
+    }
+
     const nowStr = getLocalTimestampString();
     await db.run(`
-      INSERT INTO devices (serial_number, device_name, tenant_id, last_seen, status)
-      VALUES (?, ?, ?, ?, 'OFFLINE')
+      INSERT INTO devices (serial_number, device_name, tenant_id, last_seen, status, ip_address)
+      VALUES (?, ?, ?, ?, 'OFFLINE', ?)
       ON CONFLICT(serial_number) DO UPDATE SET
         device_name = COALESCE(excluded.device_name, devices.device_name),
-        tenant_id = COALESCE(excluded.tenant_id, devices.tenant_id)
-    `, [serial_number.trim(), device_name ? device_name.trim() : `Device-${serial_number.slice(-4)}`, tenant_id || null, nowStr]);
-    res.json({ success: true, message: 'Device successfully registered.' });
+        tenant_id = COALESCE(excluded.tenant_id, devices.tenant_id),
+        ip_address = COALESCE(excluded.ip_address, devices.ip_address)
+    `, [cleanSN, device_name ? device_name.trim() : `Device-${cleanSN.slice(-4)}`, tenant_id || null, nowStr, clientIp]);
+
+    res.json({
+      success: true,
+      message: 'Device successfully registered and locked to your Madrasa account.',
+      config: {
+        serverIp: '13.233.246.171',
+        serverPort: '3000',
+        enablePush: '1 / ON'
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
