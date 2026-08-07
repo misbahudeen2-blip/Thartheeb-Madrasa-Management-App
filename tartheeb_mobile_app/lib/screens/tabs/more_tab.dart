@@ -151,15 +151,7 @@ class MoreTab extends StatelessWidget {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => Scaffold(
-                        appBar: AppBar(
-                          title: Text('Batches', style: GoogleFonts.cairo(fontWeight: FontWeight.bold)),
-                          backgroundColor: Colors.white,
-                          surfaceTintColor: Colors.transparent,
-                          foregroundColor: AppTheme.slate900,
-                        ),
-                        body: BatchesTab(tenantId: tenantId),
-                      ),
+                      builder: (_) => BatchesTab(tenantId: tenantId),
                     ),
                   ),
                 ),

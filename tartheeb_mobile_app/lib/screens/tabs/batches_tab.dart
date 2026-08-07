@@ -362,30 +362,38 @@ class _BatchesTabState extends State<BatchesTab> {
           children: [
             // Header matching Web screenshot
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               color: Colors.white,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Batch Management',
-                        style: GoogleFonts.cairo(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.slate900,
+                  if (Navigator.canPop(context))
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: AppTheme.slate900),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                    ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Batch Management',
+                          style: GoogleFonts.cairo(
+                            fontSize: 19,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.slate900,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Create and manage class batches',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
+                        Text(
+                          'Create and manage class batches',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   ElevatedButton.icon(
                     onPressed: () => _showAddEditBatchDialog(),
@@ -397,7 +405,7 @@ class _BatchesTabState extends State<BatchesTab> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF798720),
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),

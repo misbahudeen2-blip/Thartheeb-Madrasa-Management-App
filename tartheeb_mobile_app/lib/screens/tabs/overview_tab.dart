@@ -325,10 +325,7 @@ class _OverviewTabState extends State<OverviewTab> {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => Scaffold(
-                        appBar: AppBar(title: Text('Batches', style: GoogleFonts.cairo(fontWeight: FontWeight.bold))),
-                        body: BatchesTab(tenantId: widget.tenantId),
-                      ),
+                      builder: (_) => BatchesTab(tenantId: widget.tenantId),
                     ),
                   ),
                 ),
