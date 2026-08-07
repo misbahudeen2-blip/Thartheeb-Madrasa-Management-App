@@ -17,14 +17,23 @@ class _AttendanceTabState extends State<AttendanceTab> {
   String _selectedBatch = '';
   List<dynamic> _batches = [];
   List<dynamic> _students = [];
-  Map<String, String> _attendanceStatus = {}; // studentId -> status
+  Map<String, String> _attendanceStatus = {}; // userId -> status ('present', 'late', 'absent', 'holiday')
   bool _isLoading = false;
   bool _isSubmitting = false;
+  String _activeFilter = 'ALL'; // 'ALL', 'present', 'absent', 'holiday'
 
   @override
   void initState() {
     super.initState();
     _loadBatches();
+  }
+
+  @override
+  void didUpdateWidget(covariant AttendanceTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tenantId != widget.tenantId && widget.tenantId.isNotEmpty) {
+      _loadBatches();
+    }
   }
 
   Future<void> _loadBatches() async {
@@ -52,11 +61,15 @@ class _AttendanceTabState extends State<AttendanceTab> {
         final students = (data is List ? data : [])
             .where((s) => s['batch_id']?.toString() == _selectedBatch)
             .toList();
+        
         setState(() {
           _students = students;
           _attendanceStatus = {};
           for (var s in students) {
-            _attendanceStatus[s['id'].toString()] = 'present';
+            final uid = (s['user_id'] ?? s['id'])?.toString() ?? '';
+            if (uid.isNotEmpty) {
+              _attendanceStatus[uid] = 'absent'; // Web default is absent
+            }
           }
           _isLoading = false;
         });
@@ -70,7 +83,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
     setState(() => _isSubmitting = true);
     try {
       final records = _attendanceStatus.entries.map((e) => {
-        'student_id': e.key,
+        'user_id': e.key,
         'status': e.value,
       }).toList();
 
@@ -83,9 +96,9 @@ class _AttendanceTabState extends State<AttendanceTab> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Attendance submitted successfully!'),
-            backgroundColor: const Color(0xFF10b981),
+            backgroundColor: Color(0xFF10b981),
           ),
         );
       }
@@ -101,198 +114,363 @@ class _AttendanceTabState extends State<AttendanceTab> {
   }
 
   void _changeDate(int days) {
-    setState(() => _selectedDate = _selectedDate.add(Duration(days: days)));
+    setState(() {
+      _selectedDate = _selectedDate.add(Duration(days: days));
+    });
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'present': return const Color(0xFF10b981);
-      case 'late': return const Color(0xFFf59e0b);
-      case 'absent': return const Color(0xFFef4444);
-      default: return Colors.grey;
-    }
+  int _countStatus(String status) {
+    return _attendanceStatus.values.where((s) => s == status).length;
+  }
+
+  List<dynamic> get _filteredStudents {
+    if (_activeFilter == 'ALL') return _students;
+    return _students.where((s) {
+      final uid = (s['user_id'] ?? s['id'])?.toString() ?? '';
+      return _attendanceStatus[uid] == _activeFilter;
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Date picker row
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          color: Colors.white,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () => _changeDate(-1),
-              ),
-              GestureDetector(
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDate,
-                    firstDate: DateTime(2024),
-                    lastDate: DateTime.now(),
-                  );
-                  if (date != null) setState(() => _selectedDate = date);
-                },
-                child: Text(
-                  DateFormat('EEEE, MMM d, y').format(_selectedDate),
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: AppTheme.slate900,
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        title: Text(
+          'Attendance',
+          style: GoogleFonts.cairo(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.slate900,
+            fontSize: 20,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppTheme.slate900),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Column(
+        children: [
+          // Date Selector Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, color: AppTheme.slate900),
+                  onPressed: () => _changeDate(-1),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime(2024),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (date != null) setState(() => _selectedDate = date);
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today_outlined, size: 18, color: AppTheme.emerald500),
+                      const SizedBox(width: 8),
+                      Text(
+                        DateFormat('EEEE, MMM d, y').format(_selectedDate),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          color: AppTheme.slate900,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: _selectedDate.isBefore(DateTime.now())
-                    ? () => _changeDate(1)
-                    : null,
-              ),
-            ],
-          ),
-        ),
-
-        // Batch selector
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: DropdownButtonFormField<String>(
-            value: _selectedBatch.isEmpty ? null : _selectedBatch,
-            decoration: InputDecoration(
-              labelText: 'Select Batch',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              filled: true,
-              fillColor: Colors.white,
+                IconButton(
+                  icon: const Icon(Icons.chevron_right, color: AppTheme.slate900),
+                  onPressed: () => _changeDate(1),
+                ),
+              ],
             ),
-            items: _batches.map((b) {
-              return DropdownMenuItem<String>(
-                value: b['batch_id']?.toString() ?? '',
-                child: Text(b['name'] ?? b['batch_id']?.toString() ?? ''),
-              );
-            }).toList(),
-            onChanged: (v) {
-              setState(() => _selectedBatch = v ?? '');
-              _loadStudentsForBatch();
-            },
           ),
-        ),
 
-        // Student attendance list
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: AppTheme.emerald500))
-              : _students.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No students in this batch',
-                        style: GoogleFonts.inter(color: AppTheme.slate400),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _students.length,
-                      itemBuilder: (context, index) {
-                        final student = _students[index];
-                        final id = student['id'].toString();
-                        final name = student['name'] ?? 'Unknown';
-                        final status = _attendanceStatus[id] ?? 'present';
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  name,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              ..._buildStatusToggles(id, status),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-        ),
-
-        // Submit button
-        if (_students.isNotEmpty)
+          // Batch Selector Dropdown
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitAttendance,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.emerald500,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: DropdownButtonFormField<String>(
+              value: _selectedBatch.isEmpty ? null : _selectedBatch,
+              decoration: InputDecoration(
+                labelText: 'Select Batch',
+                labelStyle: GoogleFonts.inter(color: AppTheme.emerald700, fontSize: 13),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.emerald500),
                 ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 22, width: 22,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
-                      )
-                    : Text(
-                        'Submit Attendance',
-                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.emerald700, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                filled: true,
+                fillColor: Colors.white,
               ),
+              items: _batches.map((b) {
+                final batchName = b['batch_name'] ?? b['name'] ?? b['batch_id']?.toString() ?? '';
+                return DropdownMenuItem<String>(
+                  value: b['batch_id']?.toString() ?? '',
+                  child: Text(
+                    batchName,
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                );
+              }).toList(),
+              onChanged: (v) {
+                setState(() => _selectedBatch = v ?? '');
+                _loadStudentsForBatch();
+              },
             ),
           ),
-      ],
+
+          // Status Filter Tabs (Present / Absent / Holiday)
+          if (_students.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  _buildFilterBadge('ALL', 'All (${_students.length})', Colors.grey.shade700, Colors.grey.shade100),
+                  const SizedBox(width: 8),
+                  _buildFilterBadge('present', '☑ Present (${_countStatus('present')})', const Color(0xFF15803d), const Color(0xFFf0fdf4)),
+                  const SizedBox(width: 8),
+                  _buildFilterBadge('absent', '☒ Absent (${_countStatus('absent')})', const Color(0xFFb91c1c), const Color(0xFFfef2f2)),
+                  const SizedBox(width: 8),
+                  _buildFilterBadge('holiday', '🏖 Holiday (${_countStatus('holiday')})', const Color(0xFF1d4ed8), const Color(0xFFeff6ff)),
+                ],
+              ),
+            ),
+
+          const SizedBox(height: 8),
+
+          // Student attendance list
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.emerald500))
+                : _filteredStudents.isEmpty
+                    ? Center(
+                        child: Text(
+                          _students.isEmpty ? 'No students in this batch' : 'No students matching filter',
+                          style: GoogleFonts.inter(color: AppTheme.slate400),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _filteredStudents.length,
+                        itemBuilder: (context, index) {
+                          final student = _filteredStudents[index];
+                          final userId = (student['user_id'] ?? student['id'])?.toString() ?? '';
+                          final name = student['name'] ?? 'Unknown';
+                          final rollNumber = student['roll_number']?.toString() ?? '';
+                          final status = _attendanceStatus[userId] ?? 'absent';
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.03),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Student Header Row
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        name,
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: AppTheme.slate900,
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        if (rollNumber.isNotEmpty)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade100,
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(color: Colors.grey.shade300),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const Icon(Icons.calendar_today, size: 11, color: Colors.grey),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Roll: $rollNumber',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppTheme.slate900,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
+                                          constraints: const BoxConstraints(),
+                                          padding: EdgeInsets.zero,
+                                          onPressed: () {
+                                            // Handle student deletion if needed
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Full-Text Button Options (Present / Late / Absent / Holiday)
+                                Row(
+                                  children: [
+                                    _buildFullTextButton(userId, 'present', 'Present', const Color(0xFF10b981), const Color(0xFFef4444)),
+                                    const SizedBox(width: 6),
+                                    _buildFullTextButton(userId, 'late', 'Late', const Color(0xFFf59e0b), const Color(0xFFef4444)),
+                                    const SizedBox(width: 6),
+                                    _buildFullTextButton(userId, 'absent', 'Absent', const Color(0xFFef4444), const Color(0xFFef4444)),
+                                    const SizedBox(width: 6),
+                                    _buildFullTextButton(userId, 'holiday', 'Holiday', const Color(0xFF3b82f6), const Color(0xFFef4444)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+
+          // Bottom Submit Button
+          if (_students.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitAttendance,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.emerald700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                        )
+                      : Text(
+                          'Submit Attendance',
+                          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  List<Widget> _buildStatusToggles(String studentId, String currentStatus) {
-    final statuses = ['present', 'late', 'absent'];
-    final labels = ['P', 'L', 'A'];
-    return List.generate(3, (i) {
-      final isSelected = currentStatus == statuses[i];
-      final color = _statusColor(statuses[i]);
-      return Padding(
-        padding: const EdgeInsets.only(left: 6),
-        child: GestureDetector(
-          onTap: () {
-            setState(() => _attendanceStatus[studentId] = statuses[i]);
-          },
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: isSelected ? color : Colors.transparent,
-              border: Border.all(color: color, width: 1.5),
-              borderRadius: BorderRadius.circular(8),
+  Widget _buildFilterBadge(String filterValue, String label, Color textColor, Color bgColor) {
+    final isSelected = _activeFilter == filterValue;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _activeFilter = filterValue),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? bgColor : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? textColor : Colors.grey.shade300,
+              width: isSelected ? 1.5 : 1,
             ),
-            child: Center(
-              child: Text(
-                labels[i],
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: isSelected ? Colors.white : color,
-                ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? textColor : AppTheme.slate400,
               ),
             ),
           ),
         ),
-      );
-    });
+      ),
+    );
+  }
+
+  Widget _buildFullTextButton(
+    String userId,
+    String statusValue,
+    String label,
+    Color selectedBgColor,
+    Color absentColor,
+  ) {
+    final currentStatus = _attendanceStatus[userId] ?? 'absent';
+    final isSelected = currentStatus == statusValue;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _attendanceStatus[userId] = statusValue;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? selectedBgColor : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? selectedBgColor : Colors.grey.shade300,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? Colors.white : AppTheme.slate900,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
