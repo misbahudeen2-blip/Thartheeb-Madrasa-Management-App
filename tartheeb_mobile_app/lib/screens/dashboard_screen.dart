@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
-import '../services/api_service.dart';
 import 'tabs/overview_tab.dart';
 import 'tabs/students_tab.dart';
 import 'tabs/biometric_tab.dart';
@@ -21,6 +20,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   String _tenantId = '';
   String _role = 'admin';
   String _username = '';
+  bool _isLoadingSession = true;
 
   @override
   void initState() {
@@ -30,12 +30,15 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _loadSession() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _madrasaName = prefs.getString('madrasa_name') ?? 'Tartheeb';
-      _tenantId = prefs.getString('tenant_id') ?? '';
-      _role = prefs.getString('role') ?? 'admin';
-      _username = prefs.getString('username') ?? 'Admin';
-    });
+    if (mounted) {
+      setState(() {
+        _madrasaName = prefs.getString('madrasa_name') ?? 'Tartheeb';
+        _tenantId = prefs.getString('tenant_id') ?? '';
+        _role = prefs.getString('role') ?? 'admin';
+        _username = prefs.getString('username') ?? 'Admin';
+        _isLoadingSession = false;
+      });
+    }
   }
 
   void switchTab(int index) {
@@ -44,6 +47,15 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingSession) {
+      return Scaffold(
+        backgroundColor: AppTheme.background,
+        body: const Center(
+          child: CircularProgressIndicator(color: AppTheme.emerald500),
+        ),
+      );
+    }
+
     final displayName = (_role == 'admin' || _role == 'superadmin')
         ? _madrasaName
         : (_username.isNotEmpty ? _username : _madrasaName);

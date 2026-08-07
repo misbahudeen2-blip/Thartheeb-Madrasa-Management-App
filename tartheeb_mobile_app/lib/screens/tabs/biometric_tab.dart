@@ -30,6 +30,14 @@ class _BiometricTabState extends State<BiometricTab> {
   }
 
   @override
+  void didUpdateWidget(covariant BiometricTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tenantId != widget.tenantId && widget.tenantId.isNotEmpty) {
+      _loadData();
+    }
+  }
+
+  @override
   void dispose() {
     _refreshTimer?.cancel();
     super.dispose();
@@ -43,9 +51,11 @@ class _BiometricTabState extends State<BiometricTab> {
     setState(() => _isLoading = true);
     try {
       final devices = await ApiService.getDevices(widget.tenantId);
+      final students = await ApiService.getStudents(widget.tenantId);
       if (mounted) {
         setState(() {
           _devices = devices is List ? devices : [];
+          _registered = students is List ? students.length : 0;
           _isLoading = false;
         });
       }
@@ -55,299 +65,227 @@ class _BiometricTabState extends State<BiometricTab> {
   }
 
   Future<void> _loadPunchFeed() async {
-    // Punch feed would come from attendance API or SSE
+    if (widget.tenantId.isEmpty) return;
+    try {
+      final devices = await ApiService.getDevices(widget.tenantId);
+      if (mounted) {
+        setState(() {
+          _devices = devices is List ? devices : [];
+        });
+      }
+    } catch (e) {
+      // silent refresh
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      color: AppTheme.emerald500,
-      onRefresh: _loadData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Stats Row
-            Row(
-              children: [
-                _statCard('Registered', _registered.toString(), Icons.person_add, const Color(0xFF3b82f6)),
-                const SizedBox(width: 8),
-                _statCard('Present', _presentToday.toString(), Icons.check_circle, const Color(0xFF10b981)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                _statCard('Late', _lateToday.toString(), Icons.access_time, const Color(0xFFf59e0b)),
-                const SizedBox(width: 8),
-                _statCard('Absent', _absentToday.toString(), Icons.cancel, const Color(0xFFef4444)),
-              ],
-            ),
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: RefreshIndicator(
+        color: AppTheme.emerald500,
+        onRefresh: _loadData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Text(
+                'Biometric Attendance Portal',
+                style: GoogleFonts.cairo(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.slate900,
+                ),
+              ),
+              Text(
+                'Live punch logs and eSSL/ZKTeco device management',
+                style: GoogleFonts.inter(fontSize: 13, color: AppTheme.slate400),
+              ),
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 24),
-
-            // Live Punch Feed
-            Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF10b981),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Live Punch Feed',
-                  style: GoogleFonts.cairo(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.slate900,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '(Auto-refresh 5s)',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: AppTheme.slate400,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _punchFeed.isEmpty
-                ? Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
+              // Device Status Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          Icon(Icons.sensors_off, size: 48, color: Colors.grey.shade300),
-                          const SizedBox(height: 12),
-                          Text(
-                            'No recent punches',
-                            style: GoogleFonts.inter(color: Colors.grey.shade400),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Active Biometric Devices',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: AppTheme.slate900,
                           ),
-                        ],
-                      ),
-                    ),
-                  )
-                : Column(
-                    children: _punchFeed.map((punch) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: AppTheme.emerald50,
-                              child: const Icon(Icons.person, color: AppTheme.emerald700),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    punch['name'] ?? 'Unknown',
-                                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                                  ),
-                                  Text(
-                                    punch['time'] ?? '',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: AppTheme.slate400,
-                                    ),
-                                  ),
-                                ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.emerald50,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF10b981),
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10b981).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                punch['status'] ?? 'Present',
+                              const SizedBox(width: 6),
+                              Text(
+                                '${_devices.length} Online',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF10b981),
+                                  color: AppTheme.emerald700,
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-
-            const SizedBox(height: 24),
-
-            // Active Devices
-            Text(
-              'Active Devices',
-              style: GoogleFonts.cairo(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.slate900,
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator(color: AppTheme.emerald500))
+                        : _devices.isEmpty
+                            ? Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.info_outline, color: AppTheme.slate400, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'No biometric devices registered yet.',
+                                      style: GoogleFonts.inter(fontSize: 13, color: AppTheme.slate400),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Column(
+                                children: _devices.map((dev) {
+                                  final name = dev['device_name'] ?? 'eSSL Device';
+                                  final sn = dev['sn'] ?? 'SN-UNKNOWN';
+                                  return ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.emerald50,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(Icons.fingerprint_rounded, color: AppTheme.emerald500),
+                                    ),
+                                    title: Text(name, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                    subtitle: Text('SN: $sn', style: GoogleFonts.inter(fontSize: 12)),
+                                    trailing: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade50,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Connected',
+                                        style: GoogleFonts.inter(fontSize: 11, color: Colors.green.shade700),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppTheme.emerald500))
-                : _devices.isEmpty
-                    ? Container(
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Center(
+
+              const SizedBox(height: 20),
+
+              // Live Punch Feed Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Live Punch Feed',
+                    style: GoogleFonts.cairo(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.slate900,
+                    ),
+                  ),
+                  Text(
+                    'Auto-refreshing 5s',
+                    style: GoogleFonts.inter(fontSize: 12, color: AppTheme.slate400),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: _punchFeed.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
                           child: Column(
                             children: [
-                              Icon(Icons.devices_other, size: 48, color: Colors.grey.shade300),
+                              Icon(Icons.history_toggle_off_rounded, size: 48, color: AppTheme.slate400.withValues(alpha: 0.5)),
                               const SizedBox(height: 12),
                               Text(
-                                'No devices registered',
-                                style: GoogleFonts.inter(color: Colors.grey.shade400),
+                                'No recent punches recorded today',
+                                style: GoogleFonts.inter(fontSize: 14, color: AppTheme.slate400),
                               ),
                             ],
                           ),
                         ),
                       )
                     : Column(
-                        children: _devices.map((device) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.04),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                        children: _punchFeed.map((punch) {
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppTheme.emerald50,
+                              child: const Icon(Icons.person_rounded, color: AppTheme.emerald500),
                             ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF3b82f6).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Icon(Icons.router, color: Color(0xFF3b82f6)),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        device['serial_number'] ?? 'Device',
-                                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                                      ),
-                                      Text(
-                                        device['ip'] ?? 'Unknown IP',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: AppTheme.slate400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10b981).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    'Online',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF10b981),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            title: Text(punch['name'] ?? 'Student', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                            subtitle: Text(punch['punch_time'] ?? '', style: GoogleFonts.inter(fontSize: 12)),
                           );
                         }).toList(),
                       ),
-
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _statCard(String label, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: GoogleFonts.cairo(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.slate900,
-                  ),
-                ),
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: AppTheme.slate400,
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

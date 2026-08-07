@@ -30,8 +30,19 @@ class _OverviewTabState extends State<OverviewTab> {
     _loadDashboardData();
   }
 
+  @override
+  void didUpdateWidget(covariant OverviewTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tenantId != widget.tenantId && widget.tenantId.isNotEmpty) {
+      _loadDashboardData();
+    }
+  }
+
   Future<void> _loadDashboardData() async {
-    if (widget.tenantId.isEmpty) return;
+    if (widget.tenantId.isEmpty) {
+      setState(() => _isLoading = false);
+      return;
+    }
     setState(() => _isLoading = true);
     try {
       final students = await ApiService.getStudents(widget.tenantId);
