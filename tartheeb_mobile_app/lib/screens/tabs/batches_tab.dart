@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../batch_report_screen.dart';
 import 'attendance_tab.dart';
 
 class BatchesTab extends StatefulWidget {
@@ -282,74 +283,18 @@ class _BatchesTabState extends State<BatchesTab> {
     );
   }
 
-  void _showBatchReportModal(dynamic b) async {
+  void _showBatchReportModal(dynamic b) {
     final batchId = b['batch_id']?.toString() ?? '';
-    final batchName = b['batch_name'] ?? b['name'] ?? 'Batch';
-    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final batchName = (b['batch_name'] ?? b['name'] ?? batchId).toString().toUpperCase();
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('$batchName - Daily Report', style: GoogleFonts.cairo(fontWeight: FontWeight.bold)),
-        content: FutureBuilder<dynamic>(
-          future: ApiService.getAttendance(widget.tenantId, todayStr),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                height: 100,
-                child: Center(child: CircularProgressIndicator(color: AppTheme.emerald700)),
-              );
-            }
-            final attData = snapshot.data;
-            final records = (attData is Map ? attData['records'] : []) as List? ?? [];
-            final batchRecords = records.where((r) => r['batchName'] == batchName).toList();
-            final present = batchRecords.where((r) => r['status'] == 'Present' || r['status'] == 'Late').length;
-            final absent = batchRecords.where((r) => r['status'] == 'Absent').length;
-
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Date: $todayStr', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildReportStat('Total', batchRecords.length, Colors.blue),
-                    _buildReportStat('Present', present, Colors.green),
-                    _buildReportStat('Absent', absent, Colors.red),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text('Compliance Summary:', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 4),
-                Text(
-                  batchRecords.isEmpty
-                      ? 'No attendance logs recorded for this batch today.'
-                      : '${((present / (batchRecords.isEmpty ? 1 : batchRecords.length)) * 100).toStringAsFixed(1)}% Present today',
-                  style: GoogleFonts.inter(fontSize: 12, color: AppTheme.slate900),
-                ),
-              ],
-            );
-          },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BatchReportScreen(
+          batchId: batchId,
+          batchName: batchName,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Close', style: GoogleFonts.inter(color: AppTheme.emerald700)),
-          ),
-        ],
       ),
-    );
-  }
-
-  Widget _buildReportStat(String label, int value, Color color) {
-    return Column(
-      children: [
-        Text(value.toString(), style: GoogleFonts.cairo(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppTheme.slate400)),
-      ],
     );
   }
 

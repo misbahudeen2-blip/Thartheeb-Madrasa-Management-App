@@ -272,6 +272,9 @@ class ApiService {
   static Future<dynamic> getDashboardCandlestick(String tenantId) =>
       _get('/reports/dashboard-candlestick?tenant_id=$tenantId');
 
+  static Future<dynamic> getBatchComplianceReport(String batchId, String startDate, String endDate) =>
+      _get('/reports/batch-compliance?batch_id=$batchId&start_date=$startDate&end_date=$endDate');
+
   // --- Notifications ---
   static Future<dynamic> registerToken(String token) =>
       _post('/notifications/register-token', {'token': token});
