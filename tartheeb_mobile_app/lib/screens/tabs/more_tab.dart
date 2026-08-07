@@ -117,15 +117,7 @@ class MoreTab extends StatelessWidget {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => Scaffold(
-                        appBar: AppBar(
-                          title: Text('Attendance', style: GoogleFonts.cairo(fontWeight: FontWeight.bold)),
-                          backgroundColor: Colors.white,
-                          surfaceTintColor: Colors.transparent,
-                          foregroundColor: AppTheme.slate900,
-                        ),
-                        body: AttendanceTab(tenantId: tenantId),
-                      ),
+                      builder: (_) => AttendanceTab(tenantId: tenantId),
                     ),
                   ),
                 ),

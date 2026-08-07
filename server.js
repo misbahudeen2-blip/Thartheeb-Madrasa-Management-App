@@ -1539,9 +1539,20 @@ app.get('/api/attendance', async (req, res) => {
       WHERE work_date = ?
     `, [targetDate]);
 
-    // Map logs for constant time lookup
+    // Map logs for constant time lookup (prioritizing Present/Manual logs)
     const logsMap = new Map();
-    attendanceLogs.forEach(log => logsMap.set(log.user_id, log));
+    attendanceLogs.forEach(log => {
+      const existing = logsMap.get(log.user_id);
+      if (!existing) {
+        logsMap.set(log.user_id, log);
+      } else {
+        const isCurrentActive = log.attendance_status === 'Present' || log.attendance_status === 'Late' || (log.check_in && log.check_in !== '-') || log.remarks === 'Manual Entry';
+        const isExistingActive = existing.attendance_status === 'Present' || existing.attendance_status === 'Late' || (existing.check_in && existing.check_in !== '-') || existing.remarks === 'Manual Entry';
+        if (isCurrentActive && !isExistingActive) {
+          logsMap.set(log.user_id, log);
+        }
+      }
+    });
 
     // 3. Compile report matching student database with incoming logs
     const report = students.map(student => {

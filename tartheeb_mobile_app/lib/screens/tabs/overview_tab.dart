@@ -4,6 +4,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import 'attendance_tab.dart';
+import 'teachers_tab.dart';
+import 'batches_tab.dart';
+import 'fees_tab.dart';
 
 class OverviewTab extends StatefulWidget {
   final String tenantId;
@@ -274,12 +278,59 @@ class _OverviewTabState extends State<OverviewTab> {
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
               children: [
-                _buildQuickAction('Attendance', Icons.fact_check_rounded, const Color(0xFF10b981)),
-                _buildQuickAction('Students', Icons.school_rounded, AppTheme.emerald700),
-                _buildQuickAction('Teachers', Icons.person_rounded, const Color(0xFF3b82f6)),
-                _buildQuickAction('Batches', Icons.groups_rounded, AppTheme.gold600),
-                _buildQuickAction('Fees', Icons.payments_rounded, const Color(0xFF8b5cf6)),
-                _buildQuickAction('Reports', Icons.assessment_rounded, const Color(0xFFec4899)),
+                _buildQuickAction(
+                  'Attendance',
+                  Icons.fact_check_rounded,
+                  const Color(0xFF10b981),
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AttendanceTab(tenantId: widget.tenantId),
+                    ),
+                  ),
+                ),
+                _buildQuickAction(
+                  'Teachers',
+                  Icons.person_rounded,
+                  const Color(0xFF3b82f6),
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(title: Text('Teachers', style: GoogleFonts.cairo(fontWeight: FontWeight.bold))),
+                        body: TeachersTab(tenantId: widget.tenantId),
+                      ),
+                    ),
+                  ),
+                ),
+                _buildQuickAction(
+                  'Batches',
+                  Icons.groups_rounded,
+                  AppTheme.gold600,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(title: Text('Batches', style: GoogleFonts.cairo(fontWeight: FontWeight.bold))),
+                        body: BatchesTab(tenantId: widget.tenantId),
+                      ),
+                    ),
+                  ),
+                ),
+                _buildQuickAction(
+                  'Fees',
+                  Icons.payments_rounded,
+                  const Color(0xFF8b5cf6),
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(title: Text('Fees', style: GoogleFonts.cairo(fontWeight: FontWeight.bold))),
+                        body: FeesTab(tenantId: widget.tenantId),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
 
@@ -337,40 +388,43 @@ class _OverviewTabState extends State<OverviewTab> {
     );
   }
 
-  Widget _buildQuickAction(String label, IconData icon, Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14),
+  Widget _buildQuickAction(String label, IconData icon, Color color, VoidCallback? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.slate900,
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 24),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.slate900,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
