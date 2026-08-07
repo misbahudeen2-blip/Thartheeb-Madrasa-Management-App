@@ -263,41 +263,17 @@ class _AttendanceTabState extends State<AttendanceTab> {
           if (_students.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.bolt, size: 16, color: AppTheme.emerald700),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Bulk Action (Entire Batch):',
-                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.slate900),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildBulkButton('All Present', const Color(0xFF10b981), () => _markAllStatus('present')),
-                          const SizedBox(width: 6),
-                          _buildBulkButton('All Late', const Color(0xFFf59e0b), () => _markAllStatus('late')),
-                          const SizedBox(width: 6),
-                          _buildBulkButton('All Absent', const Color(0xFFef4444), () => _markAllStatus('absent')),
-                          const SizedBox(width: 6),
-                          _buildBulkButton('All Holiday', const Color(0xFF3b82f6), () => _markAllStatus('holiday')),
-                        ],
-                      ),
-                    ),
+                    _buildBulkButton('All Present', const Color(0xFF10b981), () => _markAllStatus('present')),
+                    const SizedBox(width: 6),
+                    _buildBulkButton('All Late', const Color(0xFFf59e0b), () => _markAllStatus('late')),
+                    const SizedBox(width: 6),
+                    _buildBulkButton('All Absent', const Color(0xFFef4444), () => _markAllStatus('absent')),
+                    const SizedBox(width: 6),
+                    _buildBulkButton('All Holiday', const Color(0xFF3b82f6), () => _markAllStatus('holiday')),
                   ],
                 ),
               ),
